@@ -4,18 +4,21 @@
 #pragma once
 #include <vector>
 #include <opencv2/opencv.hpp>
+#include "../settings.hpp"
 #include "../constructs.hpp"
 
 struct Quadrant {
     cv::roi roi;
 
     void setROI(int x, int y, int width, int height) { roi = cv::Rect(x, y, width, height); }
-    Vector2 processSelf(const cv::Mat& frame) const;
+    Vector2 self(const cv::Mat& frame) const;
 };
 
-class Camera {
+class ImageProcessor {
 public:
-    std::vector<Vector2> processQuadrants(const cv::Mat& frame);
+    void quadrantize();
+    std::vector<Vector2> processQuadrants();
+    const std::vector<Vector2>& getLinePoints() const { return lineMidpoints_; }
     const std::deque<std::pair<float, std::vector<Vector2>>>& getTempHistory() const { return tempHistory_; }
     const std::vector<std::pair<float, std::vector<Vector2>>>& getFullHistory() const { return fullHistory_; }
 

@@ -8,4 +8,10 @@ struct Vector2 {
     float y;
 };
 
+struct Speed {
+    float left;
+    float right;
+    float deviation;
+};
+
 #endif //MILLER_CONSTRUCTS_HPP
