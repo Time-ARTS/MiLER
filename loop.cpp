@@ -1,10 +1,10 @@
 #include "loop.hpp"
 #include "settings.hpp"
-#include "vision.hpp"
-#include "quadrantHandler.hpp"
-#include "vectorTranslator.hpp"
-#include "pid.hpp"
-#include "motorController.hpp"
+#include "vision/vision.hpp"
+#include "vision/quadrantHandler.hpp"
+#include "motorControll/vectorTranslator.hpp"
+#include "motorControll/PID.hpp"
+#include "motorControll/motorController.hpp"
 
 void runLoop() {
     startupp();
