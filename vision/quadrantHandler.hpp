@@ -8,7 +8,7 @@
 #include "../constructs.hpp"
 
 struct Quadrant {
-    cv::roi roi;
+    cv::Rect roi;
 
     void setROI(int x, int y, int width, int height) { roi = cv::Rect(x, y, width, height); }
     Vector2 self(const cv::Mat& frame) const;

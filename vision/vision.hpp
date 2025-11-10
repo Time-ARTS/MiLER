@@ -4,7 +4,7 @@
 #pragma once
 #include "quadrantHandler.hpp"
 
-class Vison {
+class Vision {
     cv::VideoCapture cap_;
     cv::Mat currentFrame_;
     
@@ -16,6 +16,6 @@ class Vison {
     static std::vector<Vector2> processFrame();
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
-}
+};
 
 #endif //MILLER_VISION_HPP

@@ -46,7 +46,7 @@ Vector2 Quadrant::self(cv::Mat frame) const{
 void ImageProcessor::quadrantize() {
     quadrants_.clear();
 
-    cv::Mat frame = Vision::getCurrentFrame();
+    cv::Mat frame = Vision.getCurrentFrame();
 
     float totalHeight = static_cast<float>(frame.rows);
     float availableHeight = totalHeight - (QUADRANT::SPACING_Y * (QUADRANT::NUM - 1));
