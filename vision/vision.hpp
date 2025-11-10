@@ -17,3 +17,5 @@ class Vison {
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
 }
+
+#endif //MILLER_VISION_HPP
