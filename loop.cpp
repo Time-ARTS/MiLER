@@ -12,12 +12,12 @@ void runLoop() {
 }
 
 void startupp() {
-    ImageProcessor::quadrantize();
+    ImageProcessor.quadrantize();
 }
 
 void loop() {
-    auto points = Vision::processFrame();
+    auto points = Vision.processFrame();
     auto speed = VectorTranslator::translate(points);
-    auto correction = PID::computeCorrection(speed.deviation);
-    MotorController::drive(speed.left + correction, speed.right - correction);
+    //auto correction = PID::computeCorrection(speed.deviation);
+    //MotorController::drive(speed.left + correction, speed.right - correction);
 }
