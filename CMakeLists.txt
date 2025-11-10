@@ -26,7 +26,7 @@ set(SOURCES
     vision/quadrantHandler.cpp
     motorControll/PID.cpp 
     motorControll/vectorTranslator.cpp
-    motorControll/MotorController.cpp
+    motorControll/motorController.cpp
 )
 
 # ---- Header Files (for IDEs, optional) ----
@@ -38,7 +38,7 @@ set(HEADERS
     vision/quadrantHandler.hpp 
     motorControll/PID.hpp 
     motorControll/vectorTranslator.hpp
-    motorControll/MotorController.hpp
+    motorControll/motorController.hpp
 )
 
 # ---- Create Executable ----
