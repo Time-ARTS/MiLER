@@ -2,6 +2,7 @@
 #define MILLER_CONSTANTS_HPP
 
 #pragma once
+#include <cmath>
 
 /*
 Titles : // --- Title ---
@@ -18,7 +19,7 @@ namespace SETTINGS {
         constexpr double GAUSSIAN_SIGMA = 0.0;
 
         constexpr double HOUGH_RHO = 1.0;
-        constexpr double HOUGH_THETA = CV_PI / 180.0;
+        constexpr double HOUGH_THETA = M_PI / 180.0;
         constexpr int HOUGH_THRESHOLD = 50;
         constexpr int HOUGH_MIN_LINE = 50;
         constexpr int HOUGH_MAX_GAP = 10;
