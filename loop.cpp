@@ -1,3 +1,6 @@
+#include <memory>
+#include <tuple>
+
 #include "loop.hpp"
 #include "settings.hpp"
 #include "vision/vision.hpp"
@@ -7,17 +10,39 @@
 #include "motorControll/motorController.hpp"
 
 void runLoop() {
-    startupp();
-    loop();
+    loop(startupp());
 }
 
-void startupp() {
-    ImageProcessor::quadrantize();
+std::tuple<
+    std::shared_ptr<ImageProcessor>,
+    std::shared_ptr<Vision>,
+    std::shared_ptr<VectorTranslator>
+    // std::shared_ptr<PID>,
+    // std::shared_ptr<MotorController>
+> startupp() 
+{
+    auto ip = std::make_shared<ImageProcessor>();
+    auto v  = std::make_shared<Vision>();
+    auto vt = std::make_shared<VectorTranslator>();
+    // auto pid = std::make_shared<PID>();
+    // auto mc = std::make_shared<MotorController>();
+
+    ip->quadrantize(v);
+
+    return {ip, v, vt};
 }
 
-void loop() {
-    auto points = Vision::processFrame();
-    auto speed = VectorTranslator::translate(points);
-    //auto correction = PID::computeCorrection(speed.deviation);
-    //MotorController::drive(speed.left + correction, speed.right - correction);
+
+void loop(const std::tuple<
+    std::shared_ptr<ImageProcessor>,
+    std::shared_ptr<Vision>,
+    std::shared_ptr<VectorTranslator>
+    // std::shared_ptr<PID>,
+    // std::shared_ptr<MotorController>
+>& workers) {
+    auto [ip, v, vt] = workers
+    auto points = v->processFrame(ip);
+    auto speed = vt->translate(points);
+    //auto correction = pid->computeCorrection(speed.deviation);
+    //mc->drive(speed.left + correction, speed.right - correction);
 }

@@ -43,10 +43,10 @@ Vector2 Quadrant::self(cv::Mat frame) const{
     return Vector2(xMid, yMid + QUADRANT::OFFSET_Y);
 }
 
-void ImageProcessor::quadrantize() {
+void ImageProcessor::quadrantize(const std::shared_ptr<Vision>& v) {
     quadrants_.clear();
 
-    cv::Mat frame = Vision.getCurrentFrame();
+    cv::Mat frame = v->getCurrentFrame();
 
     float totalHeight = static_cast<float>(frame.rows);
     float availableHeight = totalHeight - (QUADRANT::SPACING_Y * (QUADRANT::NUM - 1));

@@ -5,7 +5,7 @@
 
 int main() {
     while (true) {
-        if (Vision.detectedLine()) {
+        if (Vision vision; vision.detectedLine()) {
             runLoop();
         } else {
             std::this_thread::sleep_for(std::chrono::seconds(30));

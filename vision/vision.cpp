@@ -33,7 +33,7 @@ bool Vision::detectedLine() {
     return !lines.empty();
 }
 
-std::vector<Vector2> Vision::processFrame() { 
+std::vector<Vector2> Vision::processFrame(const std::shared_ptr<ImageProcessor>& ip) { 
     cv::Mat frame = getCurrentFrame();
-    return ImageProcessor::processQuadrants(frame);
+    return ip->processQuadrants(frame);
 }

@@ -2,9 +2,25 @@
 #define MILLER_LOOP_HPP
 
 #pragma once
+#include <memory>
+#include <tuple>
 
 void runLoop();
-void startupp();
-void loop();
+
+std::tuple<
+    std::shared_ptr<ImageProcessor>,
+    std::shared_ptr<Vision>,
+    std::shared_ptr<VectorTranslator>
+    // std::shared_ptr<PID>,
+    // std::shared_ptr<MotorController>
+> startupp();
+
+void loop(const std::tuple<
+    std::shared_ptr<ImageProcessor>,
+    std::shared_ptr<Vision>,
+    std::shared_ptr<VectorTranslator>
+    // std::shared_ptr<PID>,
+    // std::shared_ptr<MotorController>    
+>& workers);
 
 #endif //MILLER_LOOP_HPP
