@@ -42,7 +42,7 @@ void loop(const std::tuple<
 >& workers) {
     auto [ip, v, vt] = workers;
     auto points = v->processFrame(ip);
-    auto speed = vt->translate(points);
+    auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
     //auto correction = pid->computeCorrection(speed.deviation);
     //mc->drive(speed.left + correction, speed.right - correction);
 }

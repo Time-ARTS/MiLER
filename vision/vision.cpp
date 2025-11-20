@@ -26,11 +26,11 @@ bool Vision::detectedLine() {
 
     cv::Mat gray, edges;
     cv::cvtColor(quadrant, gray, cv::COLOR_BGR2GRAY);
-    cv::GaussianBlur(gray, gray, cv::Size(VISION::GAUSSIAN_BLUR_KERNEL, VISION::GAUSSIAN_BLUR_KERNEL), VISION::GAUSSIAN_SIGMA);
-    cv::Canny(gray, edges, LINE_THRESHOLD::CANNY_LOW, LINE_THRESHOLD::CANNY_HIGH);
+    cv::GaussianBlur(gray, gray, cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL), SETTINGS::VISION::GAUSSIAN_SIGMA);
+    cv::Canny(gray, edges, SETTINGS::LINE_THRESHOLD::CANNY_LOW, SETTINGS::LINE_THRESHOLD::CANNY_HIGH);
 
     std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(edges, lines, VISION::HOUGH_RHO, VISION::HOUGH_THETA, VISION::HOUGH_THRESHOLD, VISION::HOUGH_MIN_LINE, VISION::HOUGH_MAX_GAP);
+    cv::HoughLinesP(edges, lines, SETTINGS::VISION::HOUGH_RHO, SETTINGS::VISION::HOUGH_THETA, SETTINGS::VISION::HOUGH_THRESHOLD, SETTINGS::VISION::HOUGH_MIN_LINE, SETTINGS::VISION::HOUGH_MAX_GAP);
 
     return !lines.empty();
 }
