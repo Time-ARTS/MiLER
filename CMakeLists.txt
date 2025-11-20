@@ -10,11 +10,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(OpenCV REQUIRED)
 
 find_library(WIRINGPI_LIB wiringPi)
-find_library(THREAD_LIB pthread REQUIRED)  # Threading support
 
 # ---- Include Directories ----
 include_directories(
-    ${OpenCV_INCLUDE_DIRS}
+#    ${OpenCV_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}
 )
 
@@ -47,10 +46,5 @@ add_executable(MiLER ${SOURCES} ${HEADERS})
 # ---- Link Libraries ----
 target_link_libraries(MiLER
     ${OpenCV_LIBS}
-    ${THREAD_LIB}
     ${WIRINGPI_LIB}
 )
-
-# ---- Optional Debug Output ----
-message(STATUS "OpenCV include dirs: ${OpenCV_INCLUDE_DIRS}")
-message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")

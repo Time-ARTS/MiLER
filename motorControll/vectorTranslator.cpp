@@ -1,5 +1,8 @@
 #include "vectorTranslator.hpp"
+
+#include <algorithm>
 #include <cmath>
+#include <vector>
 
 Speed VectorTranslator::translate(const std::vector<Vector2>& points, float preferredSpeed) {
     Vector2 vector = computeVectors(points);

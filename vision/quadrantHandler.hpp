@@ -2,6 +2,8 @@
 #define MILLER_QUADRANTHANDLER_HPP
 
 #pragma once
+#include <deque>
+#include <memory>
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include "../settings.hpp"

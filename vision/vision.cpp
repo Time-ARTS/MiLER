@@ -1,6 +1,8 @@
 #include "vision.hpp"
 #include "../settings.hpp"
 #include "quadrantHandler.hpp"
+#include <iostream>
+#include <memory>
 #include <opencv2/opencv.hpp>
 
 Vision::Vision() {

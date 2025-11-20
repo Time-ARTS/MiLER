@@ -2,6 +2,8 @@
 #define MILLER_VECTORTRANSLATOR_HPP
 
 #pragma once
+#include <vector>
+
 #include "../settings.hpp"
 #include "../constructs.hpp"
 

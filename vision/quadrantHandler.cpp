@@ -1,4 +1,7 @@
 #include "quadrantHandler.hpp"
+
+#include <chrono>
+
 #include "vision.hpp"
 #include "../settings.hpp"
 #include <opencv2/opencv.hpp>
