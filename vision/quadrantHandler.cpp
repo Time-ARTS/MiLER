@@ -1,8 +1,8 @@
 #include "quadrantHandler.hpp"
+#include "vision.hpp"
 #include "../settings.hpp"
 #include <opencv2/opencv.hpp>
 
-class Vision;
 using namespace SETTINGS;
 
 Vector2 Quadrant::self(cv::Mat frame) const{

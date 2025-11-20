@@ -5,6 +5,12 @@
 #include <memory>
 #include <tuple>
 
+class ImageProcessor;
+class Vision;
+class VectorTranslator;
+// class PID;
+// class MotorController;
+
 void runLoop();
 
 std::tuple<

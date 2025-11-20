@@ -7,6 +7,8 @@
 #include "../settings.hpp"
 #include "../constructs.hpp"
 
+class Vision;
+
 struct Quadrant {
     cv::Rect roi;
 
@@ -16,8 +18,9 @@ struct Quadrant {
 
 class ImageProcessor {
 public:
-    void quadrantize();
-    std::vector<Vector2> processQuadrants();
+    void quadrantize(const std::shared_ptr<Vision>& v);
+    std::vector<Vector2> processQuadrants(const cv::Mat& frame);
+
     const std::vector<Vector2>& getLinePoints() const { return lineMidpoints_; }
     const std::deque<std::pair<float, std::vector<Vector2>>>& getTempHistory() const { return tempHistory_; }
     const std::vector<std::pair<float, std::vector<Vector2>>>& getFullHistory() const { return fullHistory_; }
