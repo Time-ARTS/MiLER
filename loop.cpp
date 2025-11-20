@@ -40,7 +40,7 @@ void loop(const std::tuple<
     // std::shared_ptr<PID>,
     // std::shared_ptr<MotorController>
 >& workers) {
-    auto [ip, v, vt] = workers
+    auto [ip, v, vt] = workers;
     auto points = v->processFrame(ip);
     auto speed = vt->translate(points);
     //auto correction = pid->computeCorrection(speed.deviation);
