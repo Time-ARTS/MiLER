@@ -12,6 +12,7 @@ public:
     static Speed translate(const std::vector<Vector2>& points, float preferredSpeed);
 
 private:
+    Speed speed;
     static Vector2 computeVectors(const std::vector<Vector2>& points);
     static float computeAngularDeviation(const Vector2& vector);
     static float computeCurvature(const std::vector<Vector2>& points);

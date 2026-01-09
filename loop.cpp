@@ -38,11 +38,11 @@ std::tuple<
 void loop(const std::tuple<
     std::shared_ptr<ImageProcessor>,
     std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>
+    std::shared_ptr<VectorTranslator>,
+    std::shared_ptr<MotorController>
     // std::shared_ptr<PID>,
-    // std::shared_ptr<MotorController>
 >& workers) {
-    auto [ip, v, vt] = workers;
+    auto [ip, v, vt, mc] = workers;
 
     activeLED.set(true);
 
@@ -50,6 +50,8 @@ void loop(const std::tuple<
     auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
     //auto correction = pid->computeCorrection(speed.deviation);
     //mc->drive(speed.left + correction, speed.right - correction);
+
+    mc->drive(speed);
 
     activeLED.set(false);
 }

@@ -71,5 +71,9 @@ Speed VectorTranslator::computeWheelSpeeds(float baseSpeed, float deviation, flo
     leftSpeed = std::clamp(leftSpeed, minSpeed, 1.0f);
     rightSpeed = std::clamp(rightSpeed, minSpeed, 1.0f);
 
-    return {leftSpeed, rightSpeed};
+    speed.left = leftSpeed;
+    speed.right = rightSpeed;
+    speed.deviation = deviation;
+
+    return speed;
 }
