@@ -28,7 +28,7 @@ bool Vision::detectedLine() {
     if (frame.empty()) return false;
 
     cv::Mat gray, edges;
-    cv::cvtColor(mainQuadrant.roi, gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(currentFrame_, gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(gray, gray, cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL), SETTINGS::VISION::GAUSSIAN_SIGMA);
     cv::Canny(gray, edges, SETTINGS::LINE_THRESHOLD::CANNY_LOW, SETTINGS::LINE_THRESHOLD::CANNY_HIGH);
 
