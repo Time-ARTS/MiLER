@@ -29,6 +29,8 @@ std::tuple<
 
     ip->quadrantize(v);
 
+
+
     return {ip, v, vt};
 }
 
@@ -41,8 +43,13 @@ void loop(const std::tuple<
     // std::shared_ptr<MotorController>
 >& workers) {
     auto [ip, v, vt] = workers;
+
+    activeLED.set(true);
+
     auto points = v->processFrame(ip);
     auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
     //auto correction = pid->computeCorrection(speed.deviation);
     //mc->drive(speed.left + correction, speed.right - correction);
+
+    activeLED.set(false);
 }

@@ -8,7 +8,7 @@
 
 using namespace SETTINGS;
 
-Vector2 Quadrant::self(cv::Mat frame) const{
+Vector2 Quadrant::self(const cv::Mat& frame) const{
     if (roi.empty()) return Vector2(-1, -1);
 
     cv::Mat qFrame = frame(roi);

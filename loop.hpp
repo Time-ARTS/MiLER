@@ -11,6 +11,8 @@ class VectorTranslator;
 // class PID;
 // class MotorController;
 
+GPIO activeLED(17);
+
 void runLoop();
 
 std::tuple<
