@@ -4,11 +4,8 @@
 #include <chrono>
 
 int main() {
-    Vision vision;
-    vision.setQuadrantROI(0, 0, 640, 480); // Example ROI, adjust as needed
-
     while (true) {
-        if (vision.detectedLine()) {
+        if (Vision vision; vision.detectedLine()) {
             runLoop();
         } else {
             std::this_thread::sleep_for(std::chrono::seconds(30));
