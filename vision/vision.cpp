@@ -6,8 +6,7 @@
 #include <opencv2/opencv.hpp>
 
 Vision::Vision() {
-    cap_ = cv::VideoCapture(0);
-    //cap_.open(0, cv::CAP_V4L2);  
+    cap_.open(0, cv::CAP_V4L2);  
 
     if (!cap_.isOpened()) {
         std::cerr << "Error: Could not open camera." << std::endl;
@@ -17,18 +16,10 @@ Vision::Vision() {
 cv::Mat Vision::getCurrentFrame() {
     if (!cap_.isOpened()) return cv::Mat();
 
-    bool ret;
-    cv::Mat frame;
-    ret = cap_.read(frame);
-    currentFrame_ = frame;
-
-    if (!ret) {
+    if (!cap_.read(currentFrame_)) {
         std::cerr << "Error: Could not read frame from camera." << std::endl;
         return cv::Mat();
     }
-
-    //cap_ >> currentFrame_;
-    
     return currentFrame_;
 }
 
@@ -37,7 +28,7 @@ bool Vision::detectedLine() {
     if (frame.empty()) return false;
 
     cv::Mat gray, edges;
-    cv::cvtColor(mainQuadrant, gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(mainQuadrant.roi, gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(gray, gray, cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL), SETTINGS::VISION::GAUSSIAN_SIGMA);
     cv::Canny(gray, edges, SETTINGS::LINE_THRESHOLD::CANNY_LOW, SETTINGS::LINE_THRESHOLD::CANNY_HIGH);
 

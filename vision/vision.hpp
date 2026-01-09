@@ -3,6 +3,7 @@
 
 #pragma once
 #include <memory>
+#include <opencv2/opencv.hpp>
 
 #include "quadrantHandler.hpp"
 
@@ -14,10 +15,10 @@ class Vision {
     
     public:
     Vision();
-    static cv::Mat getCurrentFrame();
+    cv::Mat getCurrentFrame();
 
-    static bool detectedLine();
-    static std::vector<Vector2> processFrame(const std::shared_ptr<ImageProcessor>& ip);
+    bool detectedLine();
+    std::vector<Vector2> processFrame(const std::shared_ptr<ImageProcessor>& ip);
 
     void setQuadrantROI(int x, int y, int width, int height) {
         mainQuadrant.setROI(x, y, width, height);
