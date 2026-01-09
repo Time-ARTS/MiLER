@@ -9,6 +9,8 @@
 class Vision {
     cv::VideoCapture cap_;
     cv::Mat currentFrame_;
+
+    Quadrant mainQuadrant;
     
     public:
     Vision();
