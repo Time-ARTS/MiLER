@@ -4,14 +4,14 @@
 #pragma once
 
 #include "../settings.hpp"
+#include "../constructs.hpp"
 
 class MotorController {
-    GPIO activeLEDRight;
-    GPIO activeLEDLeft;
+    GPIO activeLEDRight(16);
+    GPIO activeLEDLeft(26);
 
 public:
     void drive(Speed speed);
-    void activateMotors();
 };
 
 #endif // MOTORCONTROLLER_HPP

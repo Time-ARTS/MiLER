@@ -5,13 +5,16 @@
 #include <memory>
 #include <tuple>
 
+#include "settings.hpp"
+#include "constructs.hpp"
+
 class ImageProcessor;
 class Vision;
 class VectorTranslator;
 // class PID;
 class MotorController;
 
-GPIO activeLED;
+GPIO activeLED(SETTINGS::LEDPINS::ACTIVE_LED);
 
 void runLoop();
 

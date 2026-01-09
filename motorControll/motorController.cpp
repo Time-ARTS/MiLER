@@ -20,8 +20,3 @@ void MotorController::drive(Speed speed) {
     write(serialFd, out.c_str(), out.size());
     */
 }
-
-void activateMotors() {
-    activeLEDLeft = GPIO(SETTINGS::LEDPINS::ACTIVE_LED_LEFT);
-    activeLEDRight = GPIO(SETTINGS::LEDPINS::ACTIVE_LED_RIGHT);
-}

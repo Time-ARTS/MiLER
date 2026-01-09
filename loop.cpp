@@ -3,6 +3,7 @@
 
 #include "loop.hpp"
 #include "settings.hpp"
+#include "constructs.hpp"
 #include "vision/vision.hpp"
 #include "vision/quadrantHandler.hpp"
 #include "motorControll/vectorTranslator.hpp"
@@ -26,9 +27,6 @@ std::tuple<
     auto vt = std::make_shared<VectorTranslator>();
     // auto pid = std::make_shared<PID>();
     auto mc = std::make_shared<MotorController>();
-
-    activeLED = GPIO(SETTINGS::LEDPINS::ACTIVE_LED);
-    mc->activateMotors();
 
     ip->quadrantize(v);
 
