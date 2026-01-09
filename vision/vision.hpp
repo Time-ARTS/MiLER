@@ -19,6 +19,10 @@ class Vision {
     static bool detectedLine();
     static std::vector<Vector2> processFrame(const std::shared_ptr<ImageProcessor>& ip);
 
+    void setQuadrantROI(int x, int y, int width, int height) {
+        mainQuadrant.setROI(x, y, width, height);
+    }
+
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
 };
 
