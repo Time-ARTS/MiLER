@@ -7,8 +7,8 @@
 #include "../constructs.hpp"
 
 class MotorController {
-    GPIO activeLEDRight(16);
-    GPIO activeLEDLeft(26);
+    GPIO activeLEDRight(SETTINGS::LEDPINS::ACTIVE_LED_RIGHT);
+    GPIO activeLEDLeft(SETTINGS::LEDPINS::ACTIVE_LED_LEFT);
 
 public:
     void drive(Speed speed);
