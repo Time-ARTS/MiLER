@@ -5,8 +5,8 @@
 
 int main() {
     Vision vision;
-    vision.mainQuadrant.setROI(0, 0, 640, 480); // Example ROI, adjust as needed
-    
+    vision.setQuadrantROI(0, 0, 640, 480); // Example ROI, adjust as needed
+
     while (true) {
         if (vision.detectedLine()) {
             runLoop();
