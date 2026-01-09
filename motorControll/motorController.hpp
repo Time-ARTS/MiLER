@@ -6,11 +6,12 @@
 #include "../settings.hpp"
 
 class MotorController {
-    GPIO activeLEDRight(16);
-    GPIO activeLEDLeft(26);
+    GPIO activeLEDRight;
+    GPIO activeLEDLeft;
 
 public:
     void drive(Speed speed);
+    void activateMotors();
 };
 
 #endif // MOTORCONTROLLER_HPP

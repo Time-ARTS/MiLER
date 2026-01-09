@@ -9,26 +9,26 @@ class ImageProcessor;
 class Vision;
 class VectorTranslator;
 // class PID;
-// class MotorController;
+class MotorController;
 
-GPIO activeLED(17);
+GPIO activeLED;
 
 void runLoop();
 
 std::tuple<
     std::shared_ptr<ImageProcessor>,
     std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>
+    std::shared_ptr<VectorTranslator>,
+    std::shared_ptr<MotorController>
     // std::shared_ptr<PID>,
-    // std::shared_ptr<MotorController>
 > startupp();
 
 void loop(const std::tuple<
     std::shared_ptr<ImageProcessor>,
     std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>
-    // std::shared_ptr<PID>,
-    // std::shared_ptr<MotorController>    
+    std::shared_ptr<VectorTranslator>,
+    std::shared_ptr<MotorController>
+    // std::shared_ptr<PID>,    
 >& workers);
 
 #endif //MILLER_LOOP_HPP

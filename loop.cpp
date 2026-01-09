@@ -16,22 +16,23 @@ void runLoop() {
 std::tuple<
     std::shared_ptr<ImageProcessor>,
     std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>
+    std::shared_ptr<VectorTranslator>,
+    std::shared_ptr<MotorController>
     // std::shared_ptr<PID>,
-    // std::shared_ptr<MotorController>
 > startupp() 
 {
     auto ip = std::make_shared<ImageProcessor>();
     auto v  = std::make_shared<Vision>();
     auto vt = std::make_shared<VectorTranslator>();
     // auto pid = std::make_shared<PID>();
-    // auto mc = std::make_shared<MotorController>();
+    auto mc = std::make_shared<MotorController>();
+
+    activeLED = GPIO(SETTINGS::LEDPINS::ACTIVE_LED);
+    mc->activateMotors();
 
     ip->quadrantize(v);
 
-
-
-    return {ip, v, vt};
+    return {ip, v, vt, mc};
 }
 
 

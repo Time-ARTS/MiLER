@@ -40,17 +40,7 @@ public:
     }
 
     void adaptiveSet(int value, int maxValue = 225) {
-        value = std::clamp(value, 0, maxValue);
-
-        int duty = value;
-        int period = maxValue;
-
-        for (;;) {
-            gpiod_line_set_value(line, 1);
-            usleep(duty * 100);
-            gpiod_line_set_value(line, 0);
-            usleep((period - duty) * 100);
-        }
+        gpiod_line_set_value(line, value != 0);
     }
 
 private:

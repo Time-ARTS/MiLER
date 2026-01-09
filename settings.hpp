@@ -13,6 +13,12 @@ Comment : // ** Ignore **
 
 namespace SETTINGS {
 
+    namespace LEDPINS {
+        constexpr int ACTIVE_LED = 17;
+        constexpr int ACTIVE_LED_LEFT = 16;
+        constexpr int ACTIVE_LED_RIGHT = 26;
+    }
+
     // --- VISION / PROCESSING SETTINGS ---
     namespace VISION {
         constexpr int GAUSSIAN_BLUR_KERNEL = 5;
