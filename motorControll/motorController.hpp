@@ -6,10 +6,10 @@
 #include "../settings.hpp"
 #include "../constructs.hpp"
 
-class MotorController {
-    GPIO activeLEDRight(SETTINGS::LEDPINS::ACTIVE_LED_RIGHT);
-    GPIO activeLEDLeft(SETTINGS::LEDPINS::ACTIVE_LED_LEFT);
+GPIO activeLEDRight(SETTINGS::LEDPINS::ACTIVE_LED_RIGHT);
+GPIO activeLEDLeft(SETTINGS::LEDPINS::ACTIVE_LED_LEFT);
 
+class MotorController {
 public:
     void drive(Speed speed);
 };
