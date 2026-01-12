@@ -12,13 +12,12 @@ struct Vector2 {
 };
 
 struct Speed {
-    float left;
-    float right;
-    float deviation;
+    float left{};
+    float right{};
+    float deviation{};
 };
 
 class GPIO {
-public:
     GPIO(int pin) {
         chip = gpiod_chip_open_by_number(4);
         if (!chip) throw std::runtime_error("Failed to open gpiochip4");

@@ -9,14 +9,14 @@
 
 class VectorTranslator {
 public:
-    static Speed translate(const std::vector<Vector2>& points, float preferredSpeed);
+    Speed translate(const std::vector<Vector2>& points, float preferredSpeed);
 
 private:
     Speed speed;
     static Vector2 computeVectors(const std::vector<Vector2>& points);
     static float computeAngularDeviation(const Vector2& vector);
     static float computeCurvature(const std::vector<Vector2>& points);
-    static Speed computeWheelSpeeds(float baseSpeed, float deviation, float curvature);
+    Speed computeWheelSpeeds(float baseSpeed, float deviation, float curvature);
 };
 
 
