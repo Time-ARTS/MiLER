@@ -1,7 +1,9 @@
 #include <sstream>
 #include <string>
 #include <gpiod.h>
-#include <unistd.h> // write()
+#include <unistd.h>
+
+#include "motorController.hpp"
 
 void MotorController::drive(Speed speed) {
     int leftSpeed = std::clamp(speed.left, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
