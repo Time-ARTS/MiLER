@@ -1,5 +1,7 @@
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <cmath>
 #include <gpiod.h>
 #include <unistd.h>
 
