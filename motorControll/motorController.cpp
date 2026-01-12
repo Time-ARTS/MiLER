@@ -1,18 +1,19 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
-#include <cmath>
 #include <gpiod.h>
 #include <unistd.h>
 
 #include "motorController.hpp"
 
 void MotorController::drive(Speed speed) {
-    int leftSpeed = std::clamp(speed.left, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
-    int rightSpeed = std::clamp(speed.right, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
-    
-    activeLEDLeft.adaptiveSet(leftSpeed);
-    activeLEDRight.adaptiveSet(rightSpeed);
+    const float leftspeed = speed.left;
+    const float rightspeed = speed.right;
+    float leftSpeed = std::clamp(leftspeed, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    float rightSpeed = std::clamp(rightspeed, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+
+    activeLEDLeft.adaptiveSet(static_cast<int>(leftSpeed));
+    activeLEDRight.adaptiveSet(static_cast<int>(rightSpeed));
 
     /*
     // Build a compact protocol message, terminated with newline
