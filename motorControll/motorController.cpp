@@ -7,13 +7,11 @@
 #include "motorController.hpp"
 
 void MotorController::drive(Speed speed) {
-    const float leftspeed = speed.left;
-    const float rightspeed = speed.right;
-    float leftSpeed = std::clamp(leftspeed, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
-    float rightSpeed = std::clamp(rightspeed, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    int leftSpeed = std::clamp(static_cast<int>(speed.left), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    int rightSpeed = std::clamp(static_cast<int>(speed.right), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
 
-    activeLEDLeft.adaptiveSet(static_cast<int>(leftSpeed));
-    activeLEDRight.adaptiveSet(static_cast<int>(rightSpeed));
+    activeLEDLeft.adaptiveSet(leftSpeed);
+    activeLEDRight.adaptiveSet(rightSpeed);
 
     /*
     // Build a compact protocol message, terminated with newline
