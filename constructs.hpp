@@ -18,6 +18,7 @@ struct Speed {
 };
 
 class GPIO {
+public:
     GPIO(int pin) {
         chip = gpiod_chip_open_by_number(4);
         if (!chip) throw std::runtime_error("Failed to open gpiochip4");
