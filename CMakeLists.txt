@@ -26,6 +26,8 @@ set(SOURCES
     motorControll/PID.cpp 
     motorControll/vectorTranslator.cpp
     motorControll/motorController.cpp
+    errorMessaging/error_msg.cpp
+    components.cpp
 )
 
 # ---- Header Files (for IDEs, optional) ----

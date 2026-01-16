@@ -13,7 +13,7 @@
 
 void runLoop() {
     loop(startupp());
-    std::cout << "running loop" << std::endl;
+    sendMessageToDiscord("Loop iteration started.");
 }
 
 std::tuple<

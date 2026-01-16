@@ -6,9 +6,9 @@
 
 int main() {
     while (true) {
-        std::cout << "Checking for line..." << std::endl;
+        sendMessageToDiscord("System started, checking for line...");
         if (Vision vision; vision.detectedLine()) {
-            std::cout << "Line detected! Starting main loop..." << std::endl;
+            sendMessageToDiscord("Line detected, starting main loop.");
             runLoop();
         } else {
             std::this_thread::sleep_for(std::chrono::seconds(30));
