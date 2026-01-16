@@ -10,6 +10,7 @@
 #include "motorControll/vectorTranslator.hpp"
 #include "motorControll/PID.hpp"
 #include "motorControll/motorController.hpp"
+#include "errorMessaging/error_msg.cpp"
 
 void runLoop() {
     loop(startupp());
