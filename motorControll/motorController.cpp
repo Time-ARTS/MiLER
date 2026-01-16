@@ -13,7 +13,7 @@ void MotorController::drive(Speed speed) {
     //activeLEDLeft.adaptiveSet(leftSpeed);
     //activeLEDRight.adaptiveSet(rightSpeed);
 
-    std::cout << "Driving - Left Speed: " << leftSpeed << ", Right Speed: " << rightSpeed << std::endl;
+    sendMessageToDiscord("Driving - Left Speed: " + std::to_string(leftSpeed) + ", Right Speed: " + std::to_string(rightSpeed));
 
     /*
     // Build a compact protocol message, terminated with newline
