@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "motorController.hpp"
+#include "../errorMessaging/error_msg.cpp"
 
 void MotorController::drive(Speed speed) {
     int leftSpeed = std::clamp(static_cast<int>(speed.left), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
