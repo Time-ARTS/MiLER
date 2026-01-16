@@ -1,5 +1,6 @@
 #include "vision/vision.hpp"
 #include "loop.hpp"
+#include "components.cpp"
 #include <thread>
 #include <chrono>
 
