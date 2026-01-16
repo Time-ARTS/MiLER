@@ -1,6 +1,7 @@
 #include "vision/vision.hpp"
 #include "loop.hpp"
 #include "components.cpp"
+#include "errorMessaging/error_msg.cpp"
 #include <thread>
 #include <chrono>
 
