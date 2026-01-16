@@ -10,6 +10,8 @@
 #include "motorControll/PID.hpp"
 #include "motorControll/motorController.hpp"
 
+extern GPIO activeLED;
+
 void runLoop() {
     loop(startupp());
 }

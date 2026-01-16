@@ -6,6 +6,9 @@
 
 #include "motorController.hpp"
 
+extern GPIO activeLEDRight;
+extern GPIO activeLEDLeft;
+
 void MotorController::drive(Speed speed) {
     int leftSpeed = std::clamp(static_cast<int>(speed.left), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
     int rightSpeed = std::clamp(static_cast<int>(speed.right), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
