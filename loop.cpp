@@ -1,5 +1,6 @@
 #include <memory>
 #include <tuple>
+#include <iostream>
 
 #include "loop.hpp"
 #include "settings.hpp"
@@ -12,6 +13,7 @@
 
 void runLoop() {
     loop(startupp());
+    std::cout << "running loop" << std::endl;
 }
 
 std::tuple<
@@ -43,7 +45,7 @@ void loop(const std::tuple<
 >& workers) {
     auto [ip, v, vt, mc] = workers;
 
-    activeLED.set(true);
+    //activeLED.set(true);
 
     auto points = v->processFrame(ip);
     auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
@@ -52,5 +54,5 @@ void loop(const std::tuple<
 
     mc->drive(speed);
 
-    activeLED.set(false);
+    //activeLED.set(false);
 }

@@ -14,7 +14,7 @@ class VectorTranslator;
 // class PID;
 class MotorController;
 
-extern GPIO activeLED;
+//extern GPIO activeLED;
 
 void runLoop();
 

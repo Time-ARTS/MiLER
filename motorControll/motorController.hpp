@@ -6,8 +6,8 @@
 #include "../settings.hpp"
 #include "../constructs.hpp"
 
-extern GPIO activeLEDRight;
-extern GPIO activeLEDLeft;
+//extern GPIO activeLEDRight;
+//extern GPIO activeLEDLeft;
 
 class MotorController {
 public:

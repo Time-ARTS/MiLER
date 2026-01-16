@@ -16,7 +16,7 @@ struct Speed {
     float right{};
     float deviation{};
 };
-
+/*
 class GPIO {
 public:
     GPIO(int pin) {
@@ -46,6 +46,6 @@ public:
 private:
     gpiod_chip* chip{};
     gpiod_line* line{};
-};
+};*/
 
 #endif //MILLER_CONSTRUCTS_HPP

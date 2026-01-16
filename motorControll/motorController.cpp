@@ -10,8 +10,10 @@ void MotorController::drive(Speed speed) {
     int leftSpeed = std::clamp(static_cast<int>(speed.left), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
     int rightSpeed = std::clamp(static_cast<int>(speed.right), SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
 
-    activeLEDLeft.adaptiveSet(leftSpeed);
-    activeLEDRight.adaptiveSet(rightSpeed);
+    //activeLEDLeft.adaptiveSet(leftSpeed);
+    //activeLEDRight.adaptiveSet(rightSpeed);
+
+    std::cout << "Driving - Left Speed: " << leftSpeed << ", Right Speed: " << rightSpeed << std::endl;
 
     /*
     // Build a compact protocol message, terminated with newline
