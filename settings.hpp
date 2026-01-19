@@ -12,6 +12,36 @@ Comment : // ** Ignore **
 */
 
 namespace SETTINGS {
+    // --- CONTROL / RUNTIME SETTINGS ---
+    namespace CONTROL {
+
+        // --- BUTTON SETTINGS ---
+        namespace BUTTON {
+            constexpr int START_STOP_PIN = 0;        // WiringPi pin for start/stop
+            constexpr int DEBOUNCE_MS = 500;         // Debounce duration for button presses
+            constexpr int POLL_INTERVAL_MS = 50;     // How often to check the button
+            constexpr bool ACTIVE_LOW = true;        // true if button connects to GND when pressed
+        }
+
+        // --- MODULE ENABLE FLAGS ---
+        namespace MODULE {
+            constexpr bool ENABLE_DRIVING = true;    // Enable motor/driving logic
+            constexpr bool ENABLE_DISCORD = true;    // Enable Discord messaging
+            constexpr bool ENABLE_VISION = true;     // Enable vision processing
+            constexpr bool ENABLE_LOGGING = true;    // Enable console logging
+        }
+
+        // --- THREAD SETTINGS ---
+        namespace THREAD {
+            constexpr int ROBOT_LOOP_INTERVAL_MS = 30; // Delay between robot loop cycles
+        }
+
+        // --- DISCORD SETTINGS ---
+        namespace DISCORD {
+            constexpr char WEBHOOK_URL[] = "https://discord.com/api/webhooks/1461702296311169086/""XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2";  // Discord webhook
+            constexpr int RETRY_DELAY_MS = 2000;                     // Retry delay if send fails
+        }
+    }
 
     namespace LEDPINS {
         constexpr int ACTIVE_LED = 17;
@@ -30,7 +60,7 @@ namespace SETTINGS {
         constexpr int HOUGH_MIN_LINE = 50;
         constexpr int HOUGH_MAX_GAP = 10;
     }
-    
+
     // --- QUADRANT SETTINGS ---
     namespace QUADRANT {
         constexpr int NUM = 3;
@@ -63,7 +93,7 @@ namespace SETTINGS {
         constexpr int MAX_SPEED = 255;
         constexpr int MIN_SPEED = -255;
         constexpr int DEFAULT_SPEED = 150;
-        
+
         // PIN ASSIGNMENTS
         namespace PIN {
             constexpr int EN_LEFT = 22;

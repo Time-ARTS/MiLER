@@ -1,6 +1,7 @@
 #include "vision.hpp"
 #include "../settings.hpp"
 #include "quadrantHandler.hpp"
+#include "discordMessaging/discordMessaging.hpp"
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
@@ -10,6 +11,7 @@ Vision::Vision() {
 
     if (!cap_.isOpened()) {
         std::cerr << "Error: Could not open camera." << std::endl;
+        sendMessageToDiscord("Could not open camera.", MessageType::ERROR);
     }
 }
 
@@ -18,6 +20,7 @@ cv::Mat Vision::getCurrentFrame() {
 
     if (!cap_.read(currentFrame_)) {
         std::cerr << "Error: Could not read frame from camera." << std::endl;
+        sendMessageToDiscord("Could not read frame from camera.", MessageType::ERROR);
         return cv::Mat();
     }
     return currentFrame_;

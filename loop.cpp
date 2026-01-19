@@ -1,20 +1,19 @@
-#include <memory>
-#include <tuple>
-#include <iostream>
-
 #include "loop.hpp"
 #include "settings.hpp"
-#include "constructs.hpp"
-#include "vision/vision.hpp"
-#include "vision/quadrantHandler.hpp"
-#include "motorControll/vectorTranslator.hpp"
-#include "motorControll/PID.hpp"
-#include "motorControll/motorController.hpp"
-#include "errorMessaging/error_msg.cpp"
+#include "discordMessaging/discordMessaging.hpp"
+#include <iostream>
 
 void runLoop() {
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+
     loop(startupp());
-    sendMessageToDiscord("Loop iteration started.");
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DISCORD) {
+        DiscordMessenger messenger;
+        messenger.sendMessageToDiscord("Loop iteration started.", MessageType::DEBUG);
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
 }
 
 std::tuple<
@@ -22,9 +21,7 @@ std::tuple<
     std::shared_ptr<Vision>,
     std::shared_ptr<VectorTranslator>,
     std::shared_ptr<MotorController>
-    // std::shared_ptr<PID>,
-> startupp() 
-{
+> startupp() {
     auto ip = std::make_shared<ImageProcessor>();
     auto v  = std::make_shared<Vision>();
     auto vt = std::make_shared<VectorTranslator>();
@@ -36,17 +33,15 @@ std::tuple<
     return {ip, v, vt, mc};
 }
 
-
 void loop(const std::tuple<
     std::shared_ptr<ImageProcessor>,
     std::shared_ptr<Vision>,
     std::shared_ptr<VectorTranslator>,
     std::shared_ptr<MotorController>
     // std::shared_ptr<PID>,
->& workers) {
+>& workers) 
+{
     auto [ip, v, vt, mc] = workers;
-
-    //activeLED.set(true);
 
     auto points = v->processFrame(ip);
     auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
@@ -54,6 +49,4 @@ void loop(const std::tuple<
     //mc->drive(speed.left + correction, speed.right - correction);
 
     mc->drive(speed);
-
-    //activeLED.set(false);
 }
