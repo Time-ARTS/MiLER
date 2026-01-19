@@ -1,6 +1,5 @@
 #include "vision/vision.hpp"
 #include "loop.hpp"
-#include "components.cpp"
 #include "discordMessaging/discordMessaging.hpp"
 #include "settings.hpp"
 

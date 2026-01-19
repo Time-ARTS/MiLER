@@ -1,7 +1,13 @@
 #include "loop.hpp"
 #include "settings.hpp"
 #include "discordMessaging/discordMessaging.hpp"
-#include <iostream>
+
+#include "vision/vision.hpp"
+#include "vision/quadrantHandler.hpp"
+#include "motorControll/vectorTranslator.hpp"
+#include "motorControll/motorController.hpp"
+
+#include <chrono>
 
 void runLoop() {
     if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
