@@ -11,7 +11,7 @@ using namespace SETTINGS;
 Vector2 Quadrant::self(const cv::Mat& frame) const{
     if (roi.empty()) return Vector2(-1, -1);
 
-    cv::Mat qFrame = frame(roi);
+    const cv::Mat qFrame = frame(roi);
     cv::Mat gray;
 
     if (qFrame.channels() == 3)
@@ -22,17 +22,17 @@ Vector2 Quadrant::self(const cv::Mat& frame) const{
     cv::Mat binary;
     cv::threshold(gray, binary, LINE_THRESHOLD::MIN, LINE_THRESHOLD::MAX, cv::THRESH_BINARY);
 
-    int width = binary.cols;
-    int height = binary.rows;
+    const int width = binary.cols;
+    const int height = binary.rows;
 
     float sumX = 0.0f;
     float count = 0.0f;
 
     for (int y = 0; y < height; ++y) {
-        uchar* row = binary.ptr<uchar>(y);
+        const auto* row = binary.ptr<uchar>(y);
         for (int x = 0; x < width; ++x) {
             if (row[x] > 0) {
-                sumX += x;
+                sumX += static_cast<float>(x);
                 count += 1.0f;
             }
         }
@@ -40,8 +40,8 @@ Vector2 Quadrant::self(const cv::Mat& frame) const{
 
     if (count == 0.0f) return Vector2(-1, -1);
 
-    float xMid = sumX / count;
-    float yMid = height / 2.0f;
+    const float xMid = sumX / count;
+    const float yMid = static_cast<float>(height) / 2.0f;
 
     return Vector2(xMid, yMid + QUADRANT::OFFSET_Y);
 }
@@ -49,15 +49,15 @@ Vector2 Quadrant::self(const cv::Mat& frame) const{
 void ImageProcessor::quadrantize(const std::shared_ptr<Vision>& v) {
     quadrants_.clear();
 
-    cv::Mat frame = v->getCurrentFrame();
+    const cv::Mat frame = v->getCurrentFrame();
 
-    float totalHeight = static_cast<float>(frame.rows);
-    float availableHeight = totalHeight - (QUADRANT::SPACING_Y * (QUADRANT::NUM - 1));
-    float quadrantHeight = availableHeight / QUADRANT::NUM;
+    const auto totalHeight = static_cast<float>(frame.rows);
+    const float availableHeight = totalHeight - (QUADRANT::SPACING_Y * (QUADRANT::NUM - 1));
+    const float quadrantHeight = availableHeight / QUADRANT::NUM;
 
     for (int i = 0; i < QUADRANT::NUM; ++i) {
-        int startY = static_cast<int>(QUADRANT::OFFSET_Y + i * (quadrantHeight + QUADRANT::SPACING_Y));
-        int height = static_cast<int>(std::max(0.0f, std::min(quadrantHeight, totalHeight - startY)));
+        const int startY = static_cast<int>(QUADRANT::OFFSET_Y + static_cast<float>(i) * (quadrantHeight + QUADRANT::SPACING_Y));
+        const int height = static_cast<int>(std::max(0.0f, std::min(quadrantHeight, totalHeight - static_cast<float>(startY))));
 
         Quadrant q;
         q.setROI(0, startY, frame.cols, height);
@@ -78,7 +78,7 @@ std::vector<Vector2> ImageProcessor::processQuadrants(const cv::Mat& frame) {
     fullHistory_.emplace_back(timestamp, lineMidpoints_);
     tempHistory_.emplace_back(timestamp, lineMidpoints_);
 
-    while (!tempHistory_.empty() && (timestamp - tempHistory_.front().first) > HISTORY::TEMP_DURATION) {
+    while (!tempHistory_.empty() && timestamp - tempHistory_.front().first > HISTORY::TEMP_DURATION) {
         tempHistory_.pop_front();
     }
 

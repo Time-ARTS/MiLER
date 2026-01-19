@@ -4,19 +4,19 @@
 
 #include "vision/vision.hpp"
 #include "vision/quadrantHandler.hpp"
-#include "motorControll/vectorTranslator.hpp"
-#include "motorControll/motorController.hpp"
+#include "motorControl/vectorTranslator.hpp"
+#include "motorControl/motorController.hpp"
 
 #include <chrono>
+#include <thread>
 
 void runLoop() {
-    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
 
-    loop(startupp());
+    loop(startUp());
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DISCORD) {
-        DiscordMessenger messenger;
-        messenger.sendMessageToDiscord("Loop iteration started.", MessageType::DEBUG);
+        DiscordMessenger::sendMessageToDiscord("Loop iteration started.", MessageType::DEBUG);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
@@ -27,7 +27,7 @@ std::tuple<
     std::shared_ptr<Vision>,
     std::shared_ptr<VectorTranslator>,
     std::shared_ptr<MotorController>
-> startupp() {
+> startUp() {
     auto ip = std::make_shared<ImageProcessor>();
     auto v  = std::make_shared<Vision>();
     auto vt = std::make_shared<VectorTranslator>();
@@ -49,10 +49,10 @@ void loop(const std::tuple<
 {
     auto [ip, v, vt, mc] = workers;
 
-    auto points = v->processFrame(ip);
-    auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
+    const auto points = v->processFrame(ip);
+    const auto speed = vt->translate(points, SETTINGS::MOTOR::DEFAULT_SPEED);
     //auto correction = pid->computeCorrection(speed.deviation);
     //mc->drive(speed.left + correction, speed.right - correction);
 
-    mc->drive(speed);
+    MotorController::drive(speed);
 }

@@ -11,39 +11,65 @@
 #include <wiringPi.h>
 #endif
 
-int main() {
-    using namespace SETTINGS::CONTROL;
+[[noreturn]] int main() {
+    try {
+        using namespace SETTINGS::CONTROL;
 
-    std::atomic<bool> running{false};
-    DiscordMessenger messenger;
-
-#ifdef __linux__
-    wiringPiSetup();
-    pinMode(BUTTON::START_STOP_PIN, INPUT);
-    if (BUTTON::ACTIVE_LOW) pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
-    else pullUpDnControl(BUTTON::START_STOP_PIN, PUD_DOWN);
-#endif
-
-    messenger.sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
-
-    while (true) {
-        bool buttonPressed = false;
+        std::atomic running{false};
 
 #ifdef __linux__
-        buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
+        wiringPiSetup();
+        pinMode(BUTTON::START_STOP_PIN, INPUT);
+        if (BUTTON::ACTIVE_LOW) pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
+        else pullUpDnControl(BUTTON::START_STOP_PIN, PUD_DOWN);
 #endif
 
-        if (buttonPressed) {
-            running = !running; 
-            messenger.sendMessageToDiscord(running ? "Robot started." : "Robot stopped.",
-                                           running ? MessageType::SUCCESS : MessageType::WARNING);
-            std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
+        auto lastActivity = std::chrono::high_resolution_clock::now();
+        DiscordMessenger::sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
+
+        while (true) {
+            bool buttonPressed = false;
+            bool lineDetected = false;
+
+#ifdef __linux__
+            buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
+#endif
+
+            if (buttonPressed) {
+                running = !running;
+                DiscordMessenger::sendMessageToDiscord(running ? "Robot started. Looking for line..." : "Robot stopped.", MessageType::SUCCESS);
+
+                if (running) {
+                    Vision vision;
+                    lineDetected = vision.detectedLine();
+                    DiscordMessenger::sendMessageToDiscord(lineDetected ? "Line detected." : "Line not detected, please try again.",
+                                                             lineDetected ? MessageType::SUCCESS : MessageType::ERROR);
+                }
+
+                // Update last activity timestamp
+                lastActivity = std::chrono::high_resolution_clock::now();
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
+            }
+
+            if (running && lineDetected && MODULE::ENABLE_DRIVING) {
+                runLoop();
+                lastActivity = std::chrono::high_resolution_clock::now(); // update activity when driving
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
+            }
+
+            // Check for idle timeout
+            auto now = std::chrono::high_resolution_clock::now();
+            if (auto idleDuration = std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity); idleDuration > TIME::SLEEP_TIME) {
+                DiscordMessenger::sendMessageToDiscord("No activity detected for timeout period. Shutting down.", MessageType::ERROR);
+                std::exit(EXIT_SUCCESS);
+            }
         }
 
-        if (running && MODULE::ENABLE_DRIVING) {
-            runLoop();
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
-        }
+    } catch (const std::exception& e) {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        DiscordMessenger::sendMessageToDiscord(std::string("Fatal error: ") + e.what(), MessageType::ERROR);
+        std::exit(EXIT_FAILURE);
     }
 }

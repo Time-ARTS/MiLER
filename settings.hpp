@@ -2,7 +2,9 @@
 #define MILLER_CONSTANTS_HPP
 
 #pragma once
-#include <cmath>
+#include <chrono>
+
+#include "constructs.hpp"
 
 /*
 Titles : // --- Title ---
@@ -14,6 +16,10 @@ Comment : // ** Ignore **
 namespace SETTINGS {
     // --- CONTROL / RUNTIME SETTINGS ---
     namespace CONTROL {
+
+        namespace TIME {
+            constexpr auto SLEEP_TIME = std::chrono::seconds(300); // 5 minutes
+        }
 
         // --- BUTTON SETTINGS ---
         namespace BUTTON {
@@ -55,7 +61,7 @@ namespace SETTINGS {
         constexpr double GAUSSIAN_SIGMA = 0.0;
 
         constexpr double HOUGH_RHO = 1.0;
-        constexpr double HOUGH_THETA = M_PI / 180.0;
+        constexpr double HOUGH_THETA = PI / 180.0;
         constexpr int HOUGH_THRESHOLD = 50;
         constexpr int HOUGH_MIN_LINE = 50;
         constexpr int HOUGH_MAX_GAP = 10;

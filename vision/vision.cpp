@@ -8,28 +8,26 @@
 #include <opencv2/opencv.hpp>
 
 Vision::Vision() {
-    cap_.open(0, cv::CAP_V4L2);  
+    cap_.open(0, cv::CAP_V4L2);
 
     if (!cap_.isOpened()) {
-        std::cerr << "Error: Could not open camera." << std::endl;
-        DiscordMessenger::sendMessageToDiscord("Could not open camera.", MessageType::ERROR);
+        throw std::runtime_error("Could not open camera.");
     }
 }
 
 cv::Mat Vision::getCurrentFrame() {
-    if (!cap_.isOpened()) return cv::Mat();
+    if (!cap_.isOpened())
+        throw std::runtime_error("Camera not opened.");
 
     if (!cap_.read(currentFrame_)) {
-        std::cerr << "Error: Could not read frame from camera." << std::endl;
-        DiscordMessenger::sendMessageToDiscord("Could not read frame from camera.", MessageType::ERROR);
-        return cv::Mat();
+        throw std::runtime_error("Could not read frame from camera.");
     }
+
     return currentFrame_;
 }
 
 bool Vision::detectedLine() {
-    cv::Mat frame = getCurrentFrame();
-    if (frame.empty()) return false;
+    if (const cv::Mat frame = getCurrentFrame(); frame.empty()) return false;
 
     cv::Mat gray, edges;
     cv::cvtColor(currentFrame_, gray, cv::COLOR_BGR2GRAY);
@@ -42,7 +40,7 @@ bool Vision::detectedLine() {
     return !lines.empty();
 }
 
-std::vector<Vector2> Vision::processFrame(const std::shared_ptr<ImageProcessor>& ip) { 
-    cv::Mat frame = getCurrentFrame();
+std::vector<Vector2> Vision::processFrame(const std::shared_ptr<ImageProcessor>& ip) {
+    const cv::Mat frame = getCurrentFrame();
     return ip->processQuadrants(frame);
 }

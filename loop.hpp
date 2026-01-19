@@ -5,9 +5,6 @@
 #include <memory>
 #include <tuple>
 
-#include "settings.hpp"
-#include "constructs.hpp"
-
 class ImageProcessor;
 class Vision;
 class VectorTranslator;
@@ -24,7 +21,7 @@ std::tuple<
     std::shared_ptr<VectorTranslator>,
     std::shared_ptr<MotorController>
     // std::shared_ptr<PID>,
-> startupp();
+> startUp();
 
 void loop(const std::tuple<
     std::shared_ptr<ImageProcessor>,

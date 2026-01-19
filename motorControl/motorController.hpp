@@ -3,12 +3,11 @@
 
 #pragma once
 
-#include "../settings.hpp"
 #include "../constructs.hpp"
 
 class MotorController {
 public:
-    void drive(Speed speed);
+    static void drive(Speed speed);
 };
 
 #endif // MOTORCONTROLLER_HPP

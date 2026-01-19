@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "../settings.hpp"
 #include "../constructs.hpp"
 
 class Vision;
@@ -14,8 +13,8 @@ class Vision;
 struct Quadrant {
     cv::Rect roi;
 
-    void setROI(int x, int y, int width, int height) { roi = cv::Rect(x, y, width, height); }
-    Vector2 self(const cv::Mat& frame) const;
+    void setROI(const int x, const int y, const int width, const int height) { roi = cv::Rect(x, y, width, height); }
+    [[nodiscard]] Vector2 self(const cv::Mat& frame) const;
 };
 
 class ImageProcessor {
