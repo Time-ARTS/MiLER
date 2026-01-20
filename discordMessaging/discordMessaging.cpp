@@ -24,11 +24,11 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
     const std::string webhook_url = SETTINGS::CONTROL::DISCORD::WEBHOOK_URL;
 
     static const std::unordered_map<MessageType, std::string> typeToString = {
-        {MessageType::INFO, "Info"},
-        {MessageType::WARNING, "Warning"},
-        {MessageType::ERROR, "Error"},
-        {MessageType::DEBUG, "Debug"},
-        {MessageType::SUCCESS, "Success"}
+        {MessageType::INFO, "INFO"},
+        {MessageType::WARNING, "WARNING"},
+        {MessageType::ERROR, "ERROR"},
+        {MessageType::DEBUG, "DEBUG"},
+        {MessageType::SUCCESS, "SUCCESS"}
     };
 
     static const std::unordered_map<MessageType, int> typeToColor = {

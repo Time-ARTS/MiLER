@@ -8,7 +8,8 @@
 #include <opencv2/opencv.hpp>
 
 Vision::Vision() {
-    cap_.open(0, cv::CAP_V4L2);
+    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+    cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
 
     if (!cap_.isOpened()) {
         throw std::runtime_error("Could not open camera.");
@@ -27,6 +28,7 @@ cv::Mat Vision::getCurrentFrame() {
 }
 
 bool Vision::detectedLine() {
+    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
     if (const cv::Mat frame = getCurrentFrame(); frame.empty()) return false;
 
     cv::Mat gray, edges;

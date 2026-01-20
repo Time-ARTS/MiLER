@@ -7,6 +7,10 @@
 #include <chrono>
 #include <atomic>
 
+#ifdef _WIN32
+#include <conio.h>
+#endif
+
 #ifdef __linux__
 #include <wiringPi.h>
 #endif
@@ -24,12 +28,31 @@
         else pullUpDnControl(BUTTON::START_STOP_PIN, PUD_DOWN);
 #endif
 
-        auto lastActivity = std::chrono::high_resolution_clock::now();
+        const auto programStartTime = std::chrono::high_resolution_clock::now();
+        auto lastActivity = programStartTime;
+
         DiscordMessenger::sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
 
         while (true) {
             bool buttonPressed = false;
             bool lineDetected = false;
+
+#ifdef _WIN32
+            if (_kbhit()) {
+                switch (const char key = _getch(); tolower(key))
+                {
+                    case BUTTON::KEY::START:
+                        DiscordMessenger::sendMessageToDiscord("Started through manual process", MessageType::DEBUG);
+                        buttonPressed = true;
+                        break;
+
+                    case BUTTON::KEY::QUIT: ;
+                        DiscordMessenger::sendMessageToDiscord("Forced Shutdown. Shutting down.", MessageType::WARNING);
+                        std::exit(EXIT_SUCCESS);
+                    default: ;
+                }
+            }
+#endif
 
 #ifdef __linux__
             buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
@@ -39,11 +62,11 @@
                 running = !running;
                 DiscordMessenger::sendMessageToDiscord(running ? "Robot started. Looking for line..." : "Robot stopped.", MessageType::SUCCESS);
 
-                if (running) {
+                if (running && MODULE::ENABLE_VISION) {
                     Vision vision;
                     lineDetected = vision.detectedLine();
                     DiscordMessenger::sendMessageToDiscord(lineDetected ? "Line detected." : "Line not detected, please try again.",
-                                                             lineDetected ? MessageType::SUCCESS : MessageType::ERROR);
+                                                             lineDetected ? MessageType::SUCCESS : MessageType::WARNING);
                 }
 
                 // Update last activity timestamp
@@ -53,18 +76,30 @@
             }
 
             if (running && lineDetected && MODULE::ENABLE_DRIVING) {
-                runLoop();
                 lastActivity = std::chrono::high_resolution_clock::now(); // update activity when driving
+                runLoop();
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
             }
 
-            // Check for idle timeout
-            auto now = std::chrono::high_resolution_clock::now();
-            if (auto idleDuration = std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity); idleDuration > TIME::SLEEP_TIME) {
-                DiscordMessenger::sendMessageToDiscord("No activity detected for timeout period. Shutting down.", MessageType::ERROR);
-                std::exit(EXIT_SUCCESS);
+            const auto now = std::chrono::steady_clock::now();
+
+            // === SOFT STOP: line not found in time ===
+            if (running && !lineDetected && now - lastActivity > TIME::SLEEP_TIME) {
+
+                running = false;
+                DiscordMessenger::sendMessageToDiscord( "Line not found in time. Driving disabled (soft stop).", MessageType::WARNING );
+                }
+
+#ifdef __linux__
+            // === HARD SHUTDOWN: RPi only ===
+            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
+                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down Raspberry Pi.", MessageType::ERROR);
+                system("sudo shutdown -h now");
             }
+#endif
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
         }
 
     } catch (const std::exception& e) {

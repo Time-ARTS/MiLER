@@ -3,6 +3,7 @@
 
 #pragma once
 #include <chrono>
+#include <opencv2/opencv.hpp>
 
 #include "constructs.hpp"
 
@@ -19,6 +20,7 @@ namespace SETTINGS {
 
         namespace TIME {
             constexpr auto SLEEP_TIME = std::chrono::seconds(300); // 5 minutes
+            constexpr auto MAX_RUNTIME = std::chrono::minutes(30);
         }
 
         // --- BUTTON SETTINGS ---
@@ -27,6 +29,11 @@ namespace SETTINGS {
             constexpr int DEBOUNCE_MS = 500;         // Debounce duration for button presses
             constexpr int POLL_INTERVAL_MS = 50;     // How often to check the button
             constexpr bool ACTIVE_LOW = true;        // true if button connects to GND when pressed
+
+            namespace KEY {
+                constexpr auto START = 's';
+                constexpr auto QUIT = 'q';
+            }
         }
 
         // --- MODULE ENABLE FLAGS ---
@@ -49,7 +56,7 @@ namespace SETTINGS {
         }
     }
 
-    namespace LEDPINS {
+    namespace LED_PINS {
         constexpr int ACTIVE_LED = 17;
         constexpr int ACTIVE_LED_LEFT = 16;
         constexpr int ACTIVE_LED_RIGHT = 26;
@@ -57,6 +64,9 @@ namespace SETTINGS {
 
     // --- VISION / PROCESSING SETTINGS ---
     namespace VISION {
+        constexpr int CAMERA_INDEX = 0;
+        constexpr auto CAMERA_SOURCE = cv::CAP_V4L2;
+
         constexpr int GAUSSIAN_BLUR_KERNEL = 5;
         constexpr double GAUSSIAN_SIGMA = 0.0;
 

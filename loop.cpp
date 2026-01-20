@@ -11,13 +11,8 @@
 #include <thread>
 
 void runLoop() {
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
-
     loop(startUp());
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DISCORD) {
-        DiscordMessenger::sendMessageToDiscord("Loop iteration started.", MessageType::DEBUG);
-    }
+    DiscordMessenger::sendMessageToDiscord("Loop iteration started.", MessageType::DEBUG);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
 }
