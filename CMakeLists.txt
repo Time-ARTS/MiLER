@@ -54,8 +54,9 @@ set(SOURCES
         vision/vision.cpp
         vision/quadrantHandler.cpp
         motorControl/PID.cpp
-        motorControl/vectorTranslator.cpp
+        motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
+        motorControl/speedGovernor.cpp
         discordMessaging/discordMessaging.cpp
 )
 
@@ -66,8 +67,9 @@ set(HEADERS
         vision/vision.hpp
         vision/quadrantHandler.hpp
         motorControl/PID.hpp
-        motorControl/vectorTranslator.hpp
+        motorControl/controlExtractor.hpp
         motorControl/motorController.hpp
+        motorControl/speedGovernor.hpp
         discordMessaging/discordMessaging.hpp
 )
 

@@ -52,7 +52,7 @@ void ImageProcessor::quadrantize(const std::shared_ptr<Vision>& v) {
     const cv::Mat frame = v->getCurrentFrame();
 
     const auto totalHeight = static_cast<float>(frame.rows);
-    const float availableHeight = totalHeight - (QUADRANT::SPACING_Y * (QUADRANT::NUM - 1));
+    const float availableHeight = totalHeight - QUADRANT::SPACING_Y * (QUADRANT::NUM - 1);
     const float quadrantHeight = availableHeight / QUADRANT::NUM;
 
     for (int i = 0; i < QUADRANT::NUM; ++i) {

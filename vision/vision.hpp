@@ -12,13 +12,18 @@ class Vision {
     cv::Mat currentFrame_;
     
     public:
-    Vision();
+    explicit Vision(const std::shared_ptr<ImageProcessor>& imageProcessor);
     cv::Mat getCurrentFrame();
 
     bool detectedLine();
-    std::vector<Vector2> processFrame(const std::shared_ptr<ImageProcessor>& ip);
+    std::vector<Vector2> processFrame();
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
+
+    private:
+    const std::shared_ptr<ImageProcessor>& imageProcessor_;
+
+    bool lineDetected_ = false;
 };
 
 #endif //MILLER_VISION_HPP

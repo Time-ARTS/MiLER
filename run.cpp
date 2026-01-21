@@ -19,6 +19,8 @@
     try {
         using namespace SETTINGS::CONTROL;
 
+        Loop loop;
+
         std::atomic running{false};
 
 #ifdef __linux__
@@ -39,17 +41,16 @@
 
 #ifdef _WIN32
             if (_kbhit()) {
-                switch (const char key = _getch(); tolower(key))
-                {
-                    case BUTTON::KEY::START:
-                        DiscordMessenger::sendMessageToDiscord("Started through manual process", MessageType::DEBUG);
-                        buttonPressed = true;
-                        break;
+                switch (const char key = _getch(); tolower(key)) {
+                case BUTTON::KEY::START:
+                    buttonPressed = true;
+                    DiscordMessenger::sendMessageToDiscord(!running  ? "Started manually via keyboard." : "Stopped manually via keyboard", MessageType::DEBUG);
+                    break;
 
-                    case BUTTON::KEY::QUIT: ;
-                        DiscordMessenger::sendMessageToDiscord("Forced Shutdown. Shutting down.", MessageType::WARNING);
-                        std::exit(EXIT_SUCCESS);
-                    default: ;
+                case BUTTON::KEY::QUIT:
+                    DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
+                    std::exit(EXIT_SUCCESS);
+                default: ;
                 }
             }
 #endif
@@ -63,13 +64,11 @@
                 DiscordMessenger::sendMessageToDiscord(running ? "Robot started. Looking for line..." : "Robot stopped.", MessageType::SUCCESS);
 
                 if (running && MODULE::ENABLE_VISION) {
-                    Vision vision;
-                    lineDetected = vision.detectedLine();
-                    DiscordMessenger::sendMessageToDiscord(lineDetected ? "Line detected." : "Line not detected, please try again.",
-                                                             lineDetected ? MessageType::SUCCESS : MessageType::WARNING);
+                    if (const auto vision = loop.getVision()) {
+                        lineDetected = vision->detectedLine();
+                    }
                 }
 
-                // Update last activity timestamp
                 lastActivity = std::chrono::high_resolution_clock::now();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
@@ -77,7 +76,7 @@
 
             if (running && lineDetected && MODULE::ENABLE_DRIVING) {
                 lastActivity = std::chrono::high_resolution_clock::now(); // update activity when driving
-                runLoop();
+                loop.run();
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
             }
@@ -91,15 +90,21 @@
                 DiscordMessenger::sendMessageToDiscord( "Line not found in time. Driving disabled (soft stop).", MessageType::WARNING );
                 }
 
-#ifdef __linux__
-            // === HARD SHUTDOWN: RPi only ===
+#ifdef _WIN32
             if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
-                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down Raspberry Pi.", MessageType::ERROR);
-                system("sudo shutdown -h now");
+                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Stopping testing program.", MessageType::WARNING);
+                exit(EXIT_SUCCESS);
             }
 #endif
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
+
+#ifdef __linux__
+            // === HARD SHUTDOWN: RPi only ===
+            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
+                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down Raspberry Pi.", MessageType::WARNING);
+                system("sudo shutdown -h now");
+            }
+#endif
         }
 
     } catch (const std::exception& e) {

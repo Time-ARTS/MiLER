@@ -2,33 +2,43 @@
 #define MILLER_LOOP_HPP
 
 #pragma once
+#include <chrono>
 #include <memory>
-#include <tuple>
 
+class ControlExtractor;
 class ImageProcessor;
-class Vision;
-class VectorTranslator;
-// class PID;
 class MotorController;
+class PID;
+class SpeedGovernor;
+class Vision;
 
-//extern GPIO activeLED;
+class Loop
+{
+    public:
+    Loop();
 
-void runLoop();
+    void run();
 
-std::tuple<
-    std::shared_ptr<ImageProcessor>,
-    std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>,
-    std::shared_ptr<MotorController>
-    // std::shared_ptr<PID>,
-> startUp();
+    std::shared_ptr<ControlExtractor> getControlExtractor() const {return controlExtractor_;}
+    std::shared_ptr<ImageProcessor> getImageProcessor() const {return imageProcessor_;}
+    std::shared_ptr<MotorController> getMotorController() const {return motorController_;}
+    std::shared_ptr<PID> getPID() const {return pid_;}
+    std::shared_ptr<SpeedGovernor> getSpeedGovernor() const {return speedGovernor_;}
+    std::shared_ptr<Vision> getVision() const {return vision_;}
 
-void loop(const std::tuple<
-    std::shared_ptr<ImageProcessor>,
-    std::shared_ptr<Vision>,
-    std::shared_ptr<VectorTranslator>,
-    std::shared_ptr<MotorController>
-    // std::shared_ptr<PID>,    
->& workers);
+private:
+    const std::shared_ptr<ControlExtractor> controlExtractor_;
+    const std::shared_ptr<ImageProcessor> imageProcessor_;
+    const std::shared_ptr<MotorController> motorController_;
+    const std::shared_ptr<PID> pid_;
+    const std::shared_ptr<SpeedGovernor> speedGovernor_;
+    const std::shared_ptr<Vision> vision_;
+
+    bool lineDetected_;
+    std::chrono::time_point<std::chrono::steady_clock> lastLineTime_ = std::chrono::steady_clock::now();
+
+    void loop() const;
+    void lineTest();
+};
 
 #endif //MILLER_LOOP_HPP

@@ -8,12 +8,26 @@ constexpr double PI = 3.141592653589793238463;
 struct Vector2 {
     float x;
     float y;
+
+    Vector2 operator-() const {return { -x, -y };}
+
+    Vector2 operator+(const Vector2& other) const {return { x + other.x, y + other.y };}
+    Vector2 operator-(const Vector2& other) const {return { x - other.x, y - other.y };}
 };
 
-struct Speed {
-    float left{};
-    float right{};
-    float deviation{};
+struct ControlSignals {
+    float deviation;
+    float curvature;
+};
+
+struct DriveCommand {
+    float speed;
+    float turn;
+
+    std::pair<float, float> motorCommand() const
+    {
+        return {speed - turn, speed + turn};
+    }
 };
 
 enum class MessageType {

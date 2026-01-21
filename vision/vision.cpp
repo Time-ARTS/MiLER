@@ -1,13 +1,13 @@
 #include "vision.hpp"
 #include "../settings.hpp"
 #include "quadrantHandler.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
-#include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-Vision::Vision() {
+#include "discordMessaging/discordMessaging.hpp"
+
+Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor) : imageProcessor_(imageProcessor) {
     if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
     cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
 
@@ -28,6 +28,7 @@ cv::Mat Vision::getCurrentFrame() {
 }
 
 bool Vision::detectedLine() {
+    lineDetected_ = false;
     if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
     if (const cv::Mat frame = getCurrentFrame(); frame.empty()) return false;
 
@@ -39,10 +40,17 @@ bool Vision::detectedLine() {
     std::vector<cv::Vec4i> lines;
     cv::HoughLinesP(edges, lines, SETTINGS::VISION::HOUGH_RHO, SETTINGS::VISION::HOUGH_THETA, SETTINGS::VISION::HOUGH_THRESHOLD, SETTINGS::VISION::HOUGH_MIN_LINE, SETTINGS::VISION::HOUGH_MAX_GAP);
 
-    return !lines.empty();
+    if (!lines.empty())
+    {
+        const auto points = this->processFrame();
+        lineDetected_ = !points.empty() ? true : false;
+    }
+    DiscordMessenger::sendMessageToDiscord(lineDetected_ ? "Line detected." : "Line not detected, please try again.",
+                                              lineDetected_ ? MessageType::SUCCESS : MessageType::WARNING);
+    return lineDetected_;
 }
 
-std::vector<Vector2> Vision::processFrame(const std::shared_ptr<ImageProcessor>& ip) {
+std::vector<Vector2> Vision::processFrame() {
     const cv::Mat frame = getCurrentFrame();
-    return ip->processQuadrants(frame);
+    return imageProcessor_->processQuadrants(frame);
 }

@@ -19,8 +19,10 @@ namespace SETTINGS {
     namespace CONTROL {
 
         namespace TIME {
-            constexpr auto SLEEP_TIME = std::chrono::seconds(300); // 5 minutes
-            constexpr auto MAX_RUNTIME = std::chrono::minutes(30);
+            constexpr auto SLEEP_TIME = std::chrono::seconds(300);
+            constexpr auto BACKTRACK_DURATION = std::chrono::milliseconds(10);
+            constexpr auto MAX_WAIT_TIME = std::chrono::seconds(10);
+            constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(30);
         }
 
         // --- BUTTON SETTINGS ---
@@ -64,8 +66,16 @@ namespace SETTINGS {
 
     // --- VISION / PROCESSING SETTINGS ---
     namespace VISION {
-        constexpr int CAMERA_INDEX = 0;
-        constexpr auto CAMERA_SOURCE = cv::CAP_V4L2;
+#ifdef __linux__
+            constexpr int  CAMERA_INDEX  = 0;
+            constexpr auto CAMERA_SOURCE = cv::CAP_V4L2;
+#elif defined(_WIN32)
+            constexpr int  CAMERA_INDEX  = 0;
+            constexpr auto CAMERA_SOURCE = cv::CAP_DSHOW;
+#else
+            constexpr int  CAMERA_INDEX  = 0;
+            constexpr auto CAMERA_SOURCE = cv::CAP_ANY;
+#endif
 
         constexpr int GAUSSIAN_BLUR_KERNEL = 5;
         constexpr double GAUSSIAN_SIGMA = 0.0;
@@ -99,9 +109,9 @@ namespace SETTINGS {
 
     // --- PID SETTINGS ---
     namespace PID {
-        constexpr double Kp = 0.5;
-        constexpr double Ki = 0.0;
-        constexpr double Kd = 0.1;
+        constexpr double KP = 0.5;
+        constexpr double KI = 0.0;
+        constexpr double KD = 0.1;
     }
 
     // --- MOTOR SETTINGS ---
