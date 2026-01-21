@@ -19,10 +19,10 @@ namespace SETTINGS {
     namespace CONTROL {
 
         namespace TIME {
-            constexpr auto SLEEP_TIME = std::chrono::seconds(300);
+            constexpr auto SLEEP_TIME = std::chrono::seconds(60);
             constexpr auto BACKTRACK_DURATION = std::chrono::milliseconds(10);
             constexpr auto MAX_WAIT_TIME = std::chrono::seconds(10);
-            constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(30);
+            constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(5);
         }
 
         // --- BUTTON SETTINGS ---

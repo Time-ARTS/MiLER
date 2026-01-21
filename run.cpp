@@ -30,7 +30,7 @@
         else pullUpDnControl(BUTTON::START_STOP_PIN, PUD_DOWN);
 #endif
 
-        const auto programStartTime = std::chrono::high_resolution_clock::now();
+        const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
 
         DiscordMessenger::sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
@@ -41,7 +41,7 @@
 
 #ifdef _WIN32
             if (_kbhit()) {
-                switch (const char key = _getch(); tolower(key)) {
+                switch (const auto key = _getch(); tolower(key)) {
                 case BUTTON::KEY::START:
                     buttonPressed = true;
                     DiscordMessenger::sendMessageToDiscord(!running  ? "Started manually via keyboard." : "Stopped manually via keyboard", MessageType::DEBUG);
@@ -69,13 +69,14 @@
                     }
                 }
 
-                lastActivity = std::chrono::high_resolution_clock::now();
+                lastActivity = std::chrono::steady_clock::now();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
             }
 
             if (running && lineDetected && MODULE::ENABLE_DRIVING) {
-                lastActivity = std::chrono::high_resolution_clock::now(); // update activity when driving
+                lastActivity = std::chrono::steady_clock::now();
+
                 loop.run();
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
@@ -101,8 +102,9 @@
 #ifdef __linux__
             // === HARD SHUTDOWN: RPi only ===
             if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
-                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down Raspberry Pi.", MessageType::WARNING);
-                system("sudo shutdown -h now");
+                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down program.", MessageType::WARNING);
+                //system("sudo shutdown -h now");
+                exit(EXIT_SUCCESS);
             }
 #endif
         }
