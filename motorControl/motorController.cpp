@@ -60,5 +60,9 @@ void MotorController::pwmDrive(const float left, const float right)
     // Speed
     softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT,  pwmLeft);
     softPwmWrite(SETTINGS::MOTOR::PIN::EN_RIGHT, pwmRight);
+
+    // === STATUS LEDs ===
+    digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_LEFT,  pwmLeft  > 0 ? HIGH : LOW);
+    digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, pwmRight > 0 ? HIGH : LOW);
 #endif
 }

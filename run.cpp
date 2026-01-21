@@ -60,7 +60,6 @@ int main() {
         buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == LOW);
 #endif
 
-
         const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
 
@@ -93,6 +92,11 @@ int main() {
 
             if (buttonPressed) {
                 running = !running;
+
+#ifdef __linux__
+                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, running ? HIGH : LOW);
+#endif
+
                 DiscordMessenger::sendMessageToDiscord(running ? "Robot started. Looking for line..." : "Robot stopped.", MessageType::SUCCESS);
 
                 if (running && MODULE::ENABLE_VISION) {
@@ -120,6 +124,11 @@ int main() {
             if (running && !lineDetected && now - lastActivity > TIME::SLEEP_TIME) {
 
                 running = false;
+
+#ifdef __linux__
+                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
+#endif
+
                 DiscordMessenger::sendMessageToDiscord( "Line not found in time. Driving disabled (soft stop).", MessageType::WARNING );
                 }
 
@@ -135,6 +144,11 @@ int main() {
             if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
                 DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down program.", MessageType::WARNING);
                 //system("sudo shutdown -h now");
+
+                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
+                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, LOW);
+                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, LOW);
+
                 exit(EXIT_SUCCESS);
             }
 #endif

@@ -27,7 +27,7 @@ namespace SETTINGS {
 
         // --- BUTTON SETTINGS ---
         namespace BUTTON {
-            constexpr int START_STOP_PIN = 0;        // WiringPi pin for start/stop
+            constexpr int START_STOP_PIN = 12;        // WiringPi pin for start/stop
             constexpr int DEBOUNCE_MS = 500;         // Debounce duration for button presses
             constexpr int POLL_INTERVAL_MS = 50;     // How often to check the button
             constexpr bool ACTIVE_LOW = true;        // true if button connects to GND when pressed
