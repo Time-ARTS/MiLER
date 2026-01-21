@@ -6,6 +6,7 @@
 
 #ifdef __linux__
 #include <wiringPi.h>
+#include <softPwm.h>
 #endif
 
 void MotorController::drive(const DriveCommand& cmd) {

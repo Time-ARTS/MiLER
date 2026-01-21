@@ -13,6 +13,7 @@
 
 #ifdef __linux__
 #include <wiringPi.h>
+#include <softPwm.h>
 #endif
 
 int main() {
@@ -22,6 +23,9 @@ int main() {
         Loop loop;
 
         std::atomic running{false};
+
+        bool buttonPressed = false;
+        bool lineDetected = false;
 
 #ifdef __linux__
         wiringPiSetupGpio();
@@ -61,10 +65,11 @@ int main() {
         DiscordMessenger::sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
 
         while (true) {
-            bool buttonPressed = false;
-            bool lineDetected = false;
+            lineDetected = false;
 
 #ifdef _WIN32
+            buttonPressed = false;
+
             if (_kbhit()) {
                 switch (const auto key = _getch(); tolower(key)) {
                 case BUTTON::KEY::START:
