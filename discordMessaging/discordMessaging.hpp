@@ -8,7 +8,9 @@
 
 class DiscordMessenger {
 public:
-    static void sendMessageToDiscord(const std::string& text, const MessageType& type = MessageType::INFO);
+    static void init();
+    static void shutdown();
+    static void sendMessageToDiscord(const std::string& text, const MessageType& type);
 };
 
 #endif // DISCORD_MESSAGING_HPP

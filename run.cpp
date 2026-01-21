@@ -17,6 +17,8 @@
 #endif
 
 int main() {
+    DiscordMessenger::init();
+
     try {
         using namespace SETTINGS::CONTROL;
 
@@ -136,11 +138,13 @@ int main() {
                 exit(EXIT_SUCCESS);
             }
 #endif
-        }
 
+        }
     } catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         DiscordMessenger::sendMessageToDiscord(std::string("Fatal error: ") + e.what(), MessageType::ERROR);
         std::exit(EXIT_FAILURE);
     }
+
+    DiscordMessenger::shutdown();
 }

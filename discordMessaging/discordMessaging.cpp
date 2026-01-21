@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -5,17 +6,34 @@
 #ifdef ERROR
 #undef ERROR
 #endif
+#endif
 
 #include "discordMessaging.hpp"
 #include "settings.hpp"
-#include "constructs.hpp"
+
 #include <curl/curl.h>
 #include <unordered_map>
 #include <thread>
 #include <iostream>
+#include <chrono>
 
 
-void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type) {
+void DiscordMessenger::init()
+{
+#ifdef _WIN32
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+#endif
+}
+
+void DiscordMessenger::shutdown()
+{
+#ifdef _WIN32
+    curl_global_cleanup();
+#endif
+}
+
+void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type)
+{
     if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD) return;
 
     CURL* curl = curl_easy_init();
@@ -44,8 +62,8 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
 
     const std::string payload =
         R"({ "username": "MiLER Bot", "embeds": [{"title": ")" + typeStr +
-            R"(", "description": ")" + text +
-                R"(", "color": )" + std::to_string(color) + "}]}";
+        R"(", "description": ")" + text +
+        R"(", "color": )" + std::to_string(color) + "}]}";
 
     curl_slist* headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -57,7 +75,11 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
     if (const CURLcode res = curl_easy_perform(curl); res != CURLE_OK) {
         std::cerr << "Discord send failed: " << curl_easy_strerror(res)
                   << ", retrying in " << SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS << "ms\n";
-        std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS));
+
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS)
+        );
+
         curl_easy_perform(curl);
     }
 
