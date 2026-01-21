@@ -2,6 +2,7 @@
 #include "motorController.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
+#include <thread>
 #include <chrono>
 
 #ifdef __linux__
