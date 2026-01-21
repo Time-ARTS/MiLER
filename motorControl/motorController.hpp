@@ -6,7 +6,7 @@
 #include "../constructs.hpp"
 
 struct MotorCommandEntry {
-    DriveCommand cmd;
+    DriveCommand cmd{};
     std::chrono::steady_clock::time_point timestamp;
 };
 
@@ -17,7 +17,7 @@ public:
     void backtrack(std::chrono::milliseconds duration);
 
 private:
-    void pwmDrive(int left, int right);
+    static void pwmDrive(float left, float right);
 
     std::vector<MotorCommandEntry> commandHistory_;
 };

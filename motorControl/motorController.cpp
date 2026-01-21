@@ -2,6 +2,12 @@
 #include "motorController.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
+#include <chrono>
+
+#ifdef __linux__
+#include <wiringPi.h>
+#endif
+
 void MotorController::drive(const DriveCommand& cmd) {
     auto [left, right] = cmd.motorCommand();
 
@@ -35,14 +41,22 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
     }
 }
 
-void MotorController::pwmDrive(const int left, const int right)
+void MotorController::pwmDrive(const float left, const float right)
 {
-    const int pwmLeft  = static_cast<int>(left * 255);
-    const int pwmRight = static_cast<int>(right * 255);
-
 #ifdef __linux__
-    // Not necessarily correct
-    pwmWrite(LEFT_MOTOR_PIN, pwmLeft);
-    pwmWrite(RIGHT_MOTOR_PIN, pwmRight);
+    const int pwmLeft  = std::clamp(static_cast<int>(std::abs(left)  * 255),  0, 255);
+    const int pwmRight = std::clamp(static_cast<int>(std::abs(right) * 255), 0, 255);
+
+    // LEFT motor direction
+    digitalWrite(SETTINGS::MOTOR::PIN::IN1_LEFT, left  >= 0 ? HIGH : LOW);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN2_LEFT, left  >= 0 ? LOW  : HIGH);
+
+    // RIGHT motor direction
+    digitalWrite(SETTINGS::MOTOR::PIN::IN1_RIGHT, right >= 0 ? HIGH : LOW);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN2_RIGHT, right >= 0 ? LOW  : HIGH);
+
+    // Speed
+    softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT,  pwmLeft);
+    softPwmWrite(SETTINGS::MOTOR::PIN::EN_RIGHT, pwmRight);
 #endif
 }

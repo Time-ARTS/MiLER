@@ -24,7 +24,7 @@ struct DriveCommand {
     float speed;
     float turn;
 
-    std::pair<float, float> motorCommand() const
+    [[nodiscard]] std::pair<float, float> motorCommand() const
     {
         return {speed - turn, speed + turn};
     }

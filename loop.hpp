@@ -19,12 +19,12 @@ class Loop
 
     void run();
 
-    std::shared_ptr<ControlExtractor> getControlExtractor() const {return controlExtractor_;}
-    std::shared_ptr<ImageProcessor> getImageProcessor() const {return imageProcessor_;}
-    std::shared_ptr<MotorController> getMotorController() const {return motorController_;}
-    std::shared_ptr<PID> getPID() const {return pid_;}
-    std::shared_ptr<SpeedGovernor> getSpeedGovernor() const {return speedGovernor_;}
-    std::shared_ptr<Vision> getVision() const {return vision_;}
+    [[nodiscard]] std::shared_ptr<ControlExtractor> getControlExtractor() const {return controlExtractor_;}
+    [[nodiscard]] std::shared_ptr<ImageProcessor> getImageProcessor() const {return imageProcessor_;}
+    [[nodiscard]] std::shared_ptr<MotorController> getMotorController() const {return motorController_;}
+    [[nodiscard]] std::shared_ptr<PID> getPID() const {return pid_;}
+    [[nodiscard]] std::shared_ptr<SpeedGovernor> getSpeedGovernor() const {return speedGovernor_;}
+    [[nodiscard]] std::shared_ptr<Vision> getVision() const {return vision_;}
 
 private:
     const std::shared_ptr<ControlExtractor> controlExtractor_;

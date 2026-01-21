@@ -15,7 +15,7 @@
 #include <wiringPi.h>
 #endif
 
-[[noreturn]] int main() {
+int main() {
     try {
         using namespace SETTINGS::CONTROL;
 
@@ -24,11 +24,36 @@
         std::atomic running{false};
 
 #ifdef __linux__
-        wiringPiSetup();
+        wiringPiSetupGpio();
+
+        // Button
+        pinMode(SETTINGS::CONTROL::BUTTON::START_STOP_PIN, INPUT);
+        pullUpDnControl(SETTINGS::CONTROL::BUTTON::START_STOP_PIN, PUD_UP);
+
+        // LEDs
+        pinMode(SETTINGS::LED_PINS::ACTIVE_LED, OUTPUT);
+        pinMode(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, OUTPUT);
+        pinMode(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, OUTPUT);
+
+        // Motors
+        pinMode(SETTINGS::MOTOR::PIN::EN_LEFT, OUTPUT);
+        pinMode(SETTINGS::MOTOR::PIN::IN1_LEFT, OUTPUT);
+        pinMode(SETTINGS::MOTOR::PIN::IN2_LEFT, OUTPUT);
+
+        pinMode(SETTINGS::MOTOR::PIN::EN_RIGHT, OUTPUT);
+        pinMode(SETTINGS::MOTOR::PIN::IN1_RIGHT, OUTPUT);
+        pinMode(SETTINGS::MOTOR::PIN::IN2_RIGHT, OUTPUT);
+
+        // Enable software PWM
+        softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT,  0, 255);
+        softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255);
+
         pinMode(BUTTON::START_STOP_PIN, INPUT);
-        if (BUTTON::ACTIVE_LOW) pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
-        else pullUpDnControl(BUTTON::START_STOP_PIN, PUD_DOWN);
+        pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
+
+        buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == LOW);
 #endif
+
 
         const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
@@ -97,7 +122,6 @@
                 exit(EXIT_SUCCESS);
             }
 #endif
-
 
 #ifdef __linux__
             // === HARD SHUTDOWN: RPi only ===
