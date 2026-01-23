@@ -34,13 +34,6 @@ void DiscordMessenger::shutdown()
 
 void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type)
 {
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD) return;
-
-    CURL* curl = curl_easy_init();
-    if (!curl) return;
-
-    const std::string webhook_url = SETTINGS::CONTROL::DISCORD::WEBHOOK_URL;
-
     static const std::unordered_map<MessageType, std::string> typeToString = {
         {MessageType::INFO, "INFO"},
         {MessageType::WARNING, "WARNING"},
@@ -48,6 +41,20 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
         {MessageType::DEBUG, "DEBUG"},
         {MessageType::SUCCESS, "SUCCESS"}
     };
+
+    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD)
+    {
+        if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) return;
+
+        const std::string& typeStr = typeToString.at(type);
+        std::cout << typeStr << ":  " << text << std::endl;
+        return;
+    }
+
+    CURL* curl = curl_easy_init();
+    if (!curl) return;
+
+    const std::string webhook_url = SETTINGS::CONTROL::DISCORD::WEBHOOK_URL;
 
     static const std::unordered_map<MessageType, int> typeToColor = {
         {MessageType::INFO, 5814783},
@@ -72,9 +79,10 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
 
-    if (const CURLcode res = curl_easy_perform(curl); res != CURLE_OK) {
+    if (const CURLcode res = curl_easy_perform(curl); res != CURLE_OK)
+    {
         std::cerr << "Discord send failed: " << curl_easy_strerror(res)
-                  << ", retrying in " << SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS << "ms\n";
+            << ", retrying in " << SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS << "ms\n";
 
         std::this_thread::sleep_for(
             std::chrono::milliseconds(SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS)

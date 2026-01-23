@@ -5,22 +5,25 @@
 
 constexpr double PI = 3.141592653589793238463;
 
-struct Vector2 {
+struct Vector2
+{
     float x;
     float y;
 
-    Vector2 operator-() const {return { -x, -y };}
+    Vector2 operator-() const { return {-x, -y}; }
 
-    Vector2 operator+(const Vector2& other) const {return { x + other.x, y + other.y };}
-    Vector2 operator-(const Vector2& other) const {return { x - other.x, y - other.y };}
+    Vector2 operator+(const Vector2& other) const { return {x + other.x, y + other.y}; }
+    Vector2 operator-(const Vector2& other) const { return {x - other.x, y - other.y}; }
 };
 
-struct ControlSignals {
+struct ControlSignals
+{
     float deviation;
     float curvature;
 };
 
-struct DriveCommand {
+struct DriveCommand
+{
     float speed;
     float turn;
 
@@ -30,7 +33,8 @@ struct DriveCommand {
     }
 };
 
-enum class MessageType {
+enum class MessageType
+{
     INFO,
     WARNING,
     ERROR,

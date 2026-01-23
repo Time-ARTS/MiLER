@@ -12,20 +12,23 @@
 #include <thread>
 #include <memory>
 
+#include "vision/debugRenderer.hpp"
+
 Loop::Loop()
     : controlExtractor_(std::make_shared<ControlExtractor>())
-    , imageProcessor_(std::make_shared<ImageProcessor>())
-    , motorController_(std::make_shared<MotorController>())
-    , pid_(std::make_shared<PID>(SETTINGS::PID::KD, SETTINGS::PID::KI, SETTINGS::PID::KP))
-    , speedGovernor_(std::make_shared<SpeedGovernor>())
-    , vision_(std::make_shared<Vision>(imageProcessor_))
-    , lineDetected_(true)
+      , imageProcessor_(std::make_shared<ImageProcessor>())
+      , motorController_(std::make_shared<MotorController>())
+      , pid_(std::make_shared<PID>(SETTINGS::PID::KD, SETTINGS::PID::KI, SETTINGS::PID::KP))
+      , speedGovernor_(std::make_shared<SpeedGovernor>())
+      , vision_(std::make_shared<Vision>(imageProcessor_))
+      , lineDetected_(true)
 {
-    if (!vision_ || !imageProcessor_ || !motorController_ || !pid_ || !speedGovernor_ || !controlExtractor_) {
+    if (!vision_ || !imageProcessor_ || !motorController_ || !pid_ || !speedGovernor_ || !controlExtractor_)
+    {
         throw std::runtime_error("Loop subsystem not initialized correctly.");
     }
 
-
+    imageProcessor_->quadrantize(vision_);
 }
 
 void Loop::run()
@@ -34,14 +37,15 @@ void Loop::run()
 
     while (true)
     {
-        this->lineTest();
+        lineTest();
 
-        if (!lineDetected_) {
+        if (!lineDetected_)
+        {
             DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
             break;
         }
 
-        this->loop();
+        loop();
     }
 }
 
@@ -59,17 +63,26 @@ void Loop::loop() const
     const DriveCommand cmd{speed, turnCorrection};
     motorController_->drive(cmd);
 
+    if (SETTINGS::CONTROL::DEBUG::ENABLE_DEBUG_VIEW)
+    {
+        cv::Mat frame = vision_->getCurrentFrame();
+        const auto quadrants = imageProcessor_->getQuadrants();
+        DebugRenderer::render(frame, quadrants, points, deviation, curvature, turnCorrection, speed);
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
 }
 
 void Loop::lineTest()
 {
-    try {
+    try
+    {
         auto points = vision_->processFrame();
         lineDetected_ = !points.empty();
         const auto now = std::chrono::steady_clock::now();
 
-        if (lineDetected_) {
+        if (lineDetected_)
+        {
             lastLineTime_ = now;
             return;
         }
@@ -91,8 +104,10 @@ void Loop::lineTest()
             points = vision_->processFrame();
             lineDetected_ = !points.empty();
 
-            if (lineDetected_) {
-                DiscordMessenger::sendMessageToDiscord("Line re-acquired during backtrack recovery.", MessageType::SUCCESS);
+            if (lineDetected_)
+            {
+                DiscordMessenger::sendMessageToDiscord("Line re-acquired during backtrack recovery.",
+                                                       MessageType::SUCCESS);
                 lastLineTime_ = std::chrono::steady_clock::now();
                 return;
             }
@@ -101,9 +116,10 @@ void Loop::lineTest()
         DiscordMessenger::sendMessageToDiscord("Line recovery failed. Soft stopping robot.", MessageType::ERROR);
 
         lineDetected_ = false;
-
-    } catch (const std::exception& e) {
-        DiscordMessenger::sendMessageToDiscord( std::string("Fatal error in loop: ") + e.what(), MessageType::ERROR );
+    }
+    catch (const std::exception& e)
+    {
+        DiscordMessenger::sendMessageToDiscord(std::string("Fatal error in loop: ") + e.what(), MessageType::ERROR);
         std::exit(EXIT_FAILURE);
     }
 }

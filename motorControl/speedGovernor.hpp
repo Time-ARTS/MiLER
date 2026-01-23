@@ -1,7 +1,8 @@
 #ifndef MILER_SPEEDGOVENOR_HPP
 #define MILER_SPEEDGOVENOR_HPP
 
-class SpeedGovernor {
+class SpeedGovernor
+{
 public:
     static float compute(float curvature, float baseSpeed);
 

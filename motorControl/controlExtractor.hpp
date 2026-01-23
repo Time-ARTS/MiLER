@@ -6,7 +6,8 @@
 
 #include "../constructs.hpp"
 
-class ControlExtractor {
+class ControlExtractor
+{
 public:
     static ControlSignals extract(const std::vector<Vector2>& points);
 

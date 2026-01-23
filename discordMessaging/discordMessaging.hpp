@@ -6,7 +6,8 @@
 #include <string>
 #include "constructs.hpp"
 
-class DiscordMessenger {
+class DiscordMessenger
+{
 public:
     static void init();
     static void shutdown();

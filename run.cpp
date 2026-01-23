@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <iostream>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -16,10 +17,12 @@
 #include <softPwm.h>
 #endif
 
-int main() {
+int main()
+{
     DiscordMessenger::init();
 
-    try {
+    try
+    {
         using namespace SETTINGS::CONTROL;
 
         Loop loop;
@@ -32,16 +35,13 @@ int main() {
 #ifdef __linux__
         wiringPiSetupGpio();
 
-        // Button
-        pinMode(SETTINGS::CONTROL::BUTTON::START_STOP_PIN, INPUT);
-        pullUpDnControl(SETTINGS::CONTROL::BUTTON::START_STOP_PIN, PUD_UP);
+        pinMode(BUTTON::START_STOP_PIN, INPUT);
+        pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
 
-        // LEDs
         pinMode(SETTINGS::LED_PINS::ACTIVE_LED, OUTPUT);
         pinMode(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, OUTPUT);
         pinMode(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, OUTPUT);
 
-        // Motors
         pinMode(SETTINGS::MOTOR::PIN::EN_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN1_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN2_LEFT, OUTPUT);
@@ -50,32 +50,25 @@ int main() {
         pinMode(SETTINGS::MOTOR::PIN::IN1_RIGHT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN2_RIGHT, OUTPUT);
 
-        // Enable software PWM
-        softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT,  0, 255);
+        softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255);
         softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255);
-
-        pinMode(BUTTON::START_STOP_PIN, INPUT);
-        pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
-
-        buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == LOW);
 #endif
 
         const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
 
-        DiscordMessenger::sendMessageToDiscord("System ready, waiting for start button...", MessageType::INFO);
+        DiscordMessenger::sendMessageToDiscord("System ready. Waiting for start.", MessageType::INFO);
 
-        while (true) {
-            lineDetected = false;
-
+        while (true)
+        {
 #ifdef _WIN32
             buttonPressed = false;
-
-            if (_kbhit()) {
-                switch (const auto key = _getch(); tolower(key)) {
+            if (_kbhit())
+            {
+                switch (static_cast<char>(tolower(_getch())))
+                {
                 case BUTTON::KEY::START:
                     buttonPressed = true;
-                    DiscordMessenger::sendMessageToDiscord(!running  ? "Started manually via keyboard." : "Stopped manually via keyboard", MessageType::DEBUG);
                     break;
 
                 case BUTTON::KEY::QUIT:
@@ -90,60 +83,69 @@ int main() {
             buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
 #endif
 
-            if (buttonPressed) {
+            if (buttonPressed)
+            {
                 running = !running;
 
 #ifdef __linux__
                 digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, running ? HIGH : LOW);
 #endif
 
-                DiscordMessenger::sendMessageToDiscord(running ? "Robot started. Looking for line..." : "Robot stopped.", MessageType::SUCCESS);
-
-                if (running && MODULE::ENABLE_VISION) {
-                    if (const auto vision = loop.getVision()) {
-                        lineDetected = vision->detectedLine();
-                    }
-                }
+                DiscordMessenger::sendMessageToDiscord(
+                    running ? "Robot started. Searching for line..." : "Robot stopped.",
+                    MessageType::SUCCESS
+                );
 
                 lastActivity = std::chrono::steady_clock::now();
-
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
             }
 
-            if (running && lineDetected && MODULE::ENABLE_DRIVING) {
-                lastActivity = std::chrono::steady_clock::now();
+            if (running && MODULE::ENABLE_VISION)
+            {
+                if (const auto vision = loop.getVision())
+                {
+                    lineDetected = vision->detectedLine();
+                }
+            }
 
+            if (running && lineDetected && MODULE::ENABLE_DRIVING)
+            {
+                lastActivity = std::chrono::steady_clock::now();
                 loop.run();
-            } else {
+            }
+            else
+            {
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::POLL_INTERVAL_MS));
             }
 
             const auto now = std::chrono::steady_clock::now();
 
-            // === SOFT STOP: line not found in time ===
-            if (running && !lineDetected && now - lastActivity > TIME::SLEEP_TIME) {
-
+            if (running && !lineDetected && now - lastActivity > TIME::SLEEP_TIME)
+            {
                 running = false;
 
 #ifdef __linux__
                 digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
 #endif
 
-                DiscordMessenger::sendMessageToDiscord( "Line not found in time. Driving disabled (soft stop).", MessageType::WARNING );
-                }
+                DiscordMessenger::sendMessageToDiscord(
+                    "Line not found in time. Soft stop.",
+                    MessageType::WARNING
+                );
+            }
 
 #ifdef _WIN32
-            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
-                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Stopping testing program.", MessageType::WARNING);
+            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME)
+            {
+                DiscordMessenger::sendMessageToDiscord("Max runtime reached. Exiting.", MessageType::WARNING);
                 exit(EXIT_SUCCESS);
             }
 #endif
 
 #ifdef __linux__
-            // === HARD SHUTDOWN: RPi only ===
-            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME) {
-                DiscordMessenger::sendMessageToDiscord( "Max runtime reached. Shutting down program.", MessageType::WARNING);
-                //system("sudo shutdown -h now");
+            if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME)
+            {
+                DiscordMessenger::sendMessageToDiscord("Max runtime reached. Shutting down.", MessageType::WARNING);
 
                 digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
                 digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, LOW);
@@ -152,9 +154,10 @@ int main() {
                 exit(EXIT_SUCCESS);
             }
 #endif
-
         }
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         DiscordMessenger::sendMessageToDiscord(std::string("Fatal error: ") + e.what(), MessageType::ERROR);
         std::exit(EXIT_FAILURE);

@@ -5,12 +5,14 @@
 
 #include "../constructs.hpp"
 
-struct MotorCommandEntry {
+struct MotorCommandEntry
+{
     DriveCommand cmd{};
     std::chrono::steady_clock::time_point timestamp;
 };
 
-class MotorController {
+class MotorController
+{
 public:
     void drive(const DriveCommand& cmd);
 
