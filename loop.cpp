@@ -1,5 +1,6 @@
 #include "loop.hpp"
 #include "settings.hpp"
+#include "shortKeyCommands.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
 #include "vision/vision.hpp"
@@ -34,10 +35,7 @@ Loop::Loop()
     if (!pid_) failed.emplace_back("PID");
     if (!speedGovernor_) failed.emplace_back("SpeedGovernor");
     if (!vision_) failed.emplace_back("Vision");
-
-#ifdef _WIN32
     if (!shortKeyCommands_) failed.emplace_back("ShortKeyCommands");
-#endif
 
     if (!failed.empty())
     {
@@ -52,7 +50,7 @@ Loop::Loop()
     imageProcessor_->quadrantize(vision_);
 }
 
-void Loop::run()
+void Loop::run(const std::atomic<bool>& running)
 {
     DiscordMessenger::sendMessageToDiscord("Loop started.", MessageType::INFO);
 
@@ -60,15 +58,14 @@ void Loop::run()
     {
         lineTest();
 
-        if (!lineDetected_)
+        if (!lineDetected_ || !running)
         {
             DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
             break;
         }
 
-#ifdef _WIN32
         shortKeyCommands_->poll();
-#endif
+
         loop();
     }
 }

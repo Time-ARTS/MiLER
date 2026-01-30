@@ -6,17 +6,31 @@
 #include <string>
 #include <unordered_set>
 
+struct Trigger;
+
 class shortKeyCommands {
 public:
     shortKeyCommands();
 
-    void poll();
     void bind(int key, std::function<void()> action, const std::string& actionDescriptor = "");
+    void addTrigger(int key, std::function<bool()> condition);
 
+    void poll();
     void flushBindingReport();
+
+    void trigger(int key);
 
 private:
     std::unordered_map<int, std::function<void()>> keyBindings_;
+    std::vector<Trigger> triggers_;
+
     std::string bindingReport_;
+
+#ifdef __linux__
+    void enableRawMode();
+    void disableRawMode();
+    bool kbhitLinux();
+    int getchLinux();
+#endif
 };
 #endif //MILER_SHORTKEYCOMMANDS_HPP

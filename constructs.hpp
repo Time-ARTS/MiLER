@@ -2,6 +2,7 @@
 #define MILLER_CONSTRUCTS_HPP
 
 #pragma once
+#include <functional>
 #include <string>
 
 constexpr double PI = 3.141592653589793238463;
@@ -21,6 +22,11 @@ struct ToggleBinding {
     char key;
     bool* flag;
     const std::string name;
+};
+
+struct Trigger {
+    std::function<bool()> condition;
+    int key;
 };
 
 struct ControlSignals

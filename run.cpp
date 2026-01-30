@@ -1,18 +1,16 @@
-#include "vision/vision.hpp"
-#include "loop.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 #include "settings.hpp"
+#include "shortKeyCommands.hpp"
+#include "loop.hpp"
+
+#include "vision/vision.hpp"
+#include "vision/debugRenderer.hpp"
+
+#include "discordMessaging/discordMessaging.hpp"
 
 #include <thread>
 #include <chrono>
 #include <atomic>
 #include <iostream>
-
-#include "vision/debugRenderer.hpp"
-
-#ifdef _WIN32
-#include "shortKeyCommands.hpp"
-#endif
 
 #ifdef __linux__
 #include <wiringPi.h>
@@ -31,7 +29,6 @@ int main()
 
         std::atomic running{false};
 
-        bool buttonPressed = false;
         bool searchWindowOpen = false;
         bool lineDetected = false;
 
@@ -60,12 +57,23 @@ int main()
         const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
 
-#ifdef _WIN32
         const auto keys = loop.getShortKeyCommands();
 
-        keys->bind(BUTTON::KEY::START, [&buttonPressed]
+        keys->bind(BUTTON::KEY::START, [&running, &lastActivity]
         {
-            buttonPressed = true;
+            running = !running;
+
+#ifdef __linux__
+            digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, running ? HIGH : LOW);
+#endif
+
+            DiscordMessenger::sendMessageToDiscord(
+                running ? "Robot started. Searching for line..." : "Robot stopped.",
+                MessageType::SUCCESS
+            );
+
+            lastActivity = std::chrono::steady_clock::now();
+            std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
         }, "Start");
 
         keys->bind(BUTTON::KEY::QUIT, []
@@ -76,7 +84,7 @@ int main()
 
         for (const auto& [key_, flag_, name_] : BUTTON::KEY::TOGGLES::TOGGLE_TABLE)
         {
-            keys->bind(key_, [flag = flag_, name = name_]()
+            keys->bind(key_, [flag = flag_, name = name_]
             {
                 *flag = !*flag;
 
@@ -84,39 +92,21 @@ int main()
             }, name_);
         }
 
-        keys->flushBindingReport();
+#ifdef __linux__
+        keys->addTrigger(keys->addTrigger('s', [&]
+        {
+            return buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) ==
+                (BUTTON::ACTIVE_LOW ? LOW : HIGH))
+        });
 #endif
+
+        keys->flushBindingReport();
 
         DiscordMessenger::sendMessageToDiscord("System ready. Waiting for start.", MessageType::INFO);
 
         while (true)
         {
-            buttonPressed = false;
-
-#ifdef _WIN32
             keys->poll();
-#endif
-
-#ifdef __linux__
-            buttonPressed = (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
-#endif
-
-            if (buttonPressed)
-            {
-                running = !running;
-
-#ifdef __linux__
-                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, running ? HIGH : LOW);
-#endif
-
-                DiscordMessenger::sendMessageToDiscord(
-                    running ? "Robot started. Searching for line..." : "Robot stopped.",
-                    MessageType::SUCCESS
-                );
-
-                lastActivity = std::chrono::steady_clock::now();
-                std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
-            }
 
             if (running && MODULE::ENABLE_VISION && MODULE::ENABLE_DEBUG)
             {
@@ -149,7 +139,7 @@ int main()
             if (running && lineDetected && MODULE::ENABLE_DRIVING)
             {
                 lastActivity = std::chrono::steady_clock::now();
-                loop.run();
+                loop.run(running);
             }
             else
             {

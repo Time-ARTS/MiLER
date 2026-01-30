@@ -51,6 +51,7 @@ include_directories(
 set(SOURCES
         loop.cpp
         run.cpp
+        shortKeyCommands.cpp
         vision/vision.cpp
         vision/debugRenderer.cpp
         vision/quadrantHandler.cpp
@@ -65,6 +66,7 @@ set(HEADERS
         constructs.hpp
         loop.hpp
         settings.hpp
+        shortKeyCommands.hpp
         vision/vision.hpp
         vision/debugRenderer.hpp
         vision/quadrantHandler.hpp
@@ -75,13 +77,6 @@ set(HEADERS
         discordMessaging/discordMessaging.hpp
 )
 
-# ---- OS-spesifikke filer ----
-if (WIN32)
-    list(APPEND SOURCES shortKeyCommands.cpp)
-    list(APPEND HEADERS shortKeyCommands.hpp)
-endif()
-
-# ---- Lag target én gang ----
 add_executable(MiLER ${SOURCES} ${HEADERS})
 
 # ---- Windows: ensure OpenCV DLLs are found at runtime ----
