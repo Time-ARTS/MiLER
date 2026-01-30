@@ -66,7 +66,9 @@ void Loop::run()
             break;
         }
 
+#ifdef _WIN32
         shortKeyCommands_->poll();
+#endif
         loop();
     }
 }
