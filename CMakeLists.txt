@@ -47,11 +47,10 @@ include_directories(
         ${CMAKE_SOURCE_DIR}
 )
 
-# ---- Source Files ----
+# ---- Source Files (common) ----
 set(SOURCES
         loop.cpp
         run.cpp
-        shortKeyCommands.cpp
         vision/vision.cpp
         vision/debugRenderer.cpp
         vision/quadrantHandler.cpp
@@ -66,7 +65,6 @@ set(HEADERS
         constructs.hpp
         loop.hpp
         settings.hpp
-        shortKeyCommands.hpp
         vision/vision.hpp
         vision/debugRenderer.hpp
         vision/quadrantHandler.hpp
@@ -75,10 +73,15 @@ set(HEADERS
         motorControl/motorController.hpp
         motorControl/speedGovernor.hpp
         discordMessaging/discordMessaging.hpp
-        shortKeyCommands.cpp
 )
 
-# ---- Executable ----
+# ---- OS-spesifikke filer ----
+if (WIN32)
+    list(APPEND SOURCES shortKeyCommands.cpp)
+    list(APPEND HEADERS shortKeyCommands.hpp)
+endif()
+
+# ---- Lag target én gang ----
 add_executable(MiLER ${SOURCES} ${HEADERS})
 
 # ---- Windows: ensure OpenCV DLLs are found at runtime ----
