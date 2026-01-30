@@ -8,8 +8,10 @@
 #include <atomic>
 #include <iostream>
 
+#include "vision/debugRenderer.hpp"
+
 #ifdef _WIN32
-#include <conio.h>
+#include "shortKeyCommands.hpp"
 #endif
 
 #ifdef __linux__
@@ -30,6 +32,7 @@ int main()
         std::atomic running{false};
 
         bool buttonPressed = false;
+        bool searchWindowOpen = false;
         bool lineDetected = false;
 
 #ifdef __linux__
@@ -57,26 +60,41 @@ int main()
         const auto programStartTime = std::chrono::steady_clock::now();
         auto lastActivity = programStartTime;
 
+#ifdef _WIN32
+        const auto keys = loop.getShortKeyCommands();
+
+        keys->bind(BUTTON::KEY::START, [&buttonPressed]
+        {
+            buttonPressed = true;
+        }, "Start");
+
+        keys->bind(BUTTON::KEY::QUIT, []
+        {
+            DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
+            std::exit(EXIT_SUCCESS);
+        }, "Quit");
+
+        for (const auto& [key_, flag_, name_] : BUTTON::KEY::TOGGLES::TOGGLE_TABLE)
+        {
+            keys->bind(key_, [flag = flag_, name = name_]()
+            {
+                *flag = !*flag;
+
+                DiscordMessenger::sendMessageToDiscord(std::string(name) + ": " + (*flag ? "ON" : "OFF"));
+            }, name_);
+        }
+
+        keys->flushBindingReport();
+#endif
+
         DiscordMessenger::sendMessageToDiscord("System ready. Waiting for start.", MessageType::INFO);
 
         while (true)
         {
-#ifdef _WIN32
             buttonPressed = false;
-            if (_kbhit())
-            {
-                switch (static_cast<char>(tolower(_getch())))
-                {
-                case BUTTON::KEY::START:
-                    buttonPressed = true;
-                    break;
 
-                case BUTTON::KEY::QUIT:
-                    DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
-                    std::exit(EXIT_SUCCESS);
-                default: ;
-                }
-            }
+#ifdef _WIN32
+            keys->poll();
 #endif
 
 #ifdef __linux__
@@ -100,11 +118,31 @@ int main()
                 std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
             }
 
-            if (running && MODULE::ENABLE_VISION)
+            if (running && MODULE::ENABLE_VISION && MODULE::ENABLE_DEBUG)
             {
                 if (const auto vision = loop.getVision())
                 {
-                    lineDetected = vision->detectedLine();
+                    cv::Mat mask;
+                    lineDetected = vision->detectedLine(&mask);
+
+                    if (!MODULE::ENABLE_DRIVING || !lineDetected)
+                    {
+                        if (!searchWindowOpen)
+                        {
+                            DebugRenderer::openWindow();
+                            searchWindowOpen = true;
+                        }
+
+                        DebugRenderer::renderSearchView(vision->getCurrentFrame(), mask);
+                    }
+                    else
+                    {
+                        if (searchWindowOpen)
+                        {
+                            DebugRenderer::closeWindow();
+                            searchWindowOpen = false;
+                        }
+                    }
                 }
             }
 
@@ -123,6 +161,7 @@ int main()
             if (running && !lineDetected && now - lastActivity > TIME::SLEEP_TIME)
             {
                 running = false;
+                searchWindowOpen = false;
 
 #ifdef __linux__
                 digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
@@ -132,6 +171,8 @@ int main()
                     "Line not found in time. Soft stop.",
                     MessageType::WARNING
                 );
+
+                DebugRenderer::closeWindow();
             }
 
 #ifdef _WIN32

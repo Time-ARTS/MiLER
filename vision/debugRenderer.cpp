@@ -2,6 +2,35 @@
 
 #include "quadrantHandler.hpp"
 #include "../settings.hpp"
+#include "discordMessaging/discordMessaging.hpp"
+
+void DebugRenderer::openWindow()
+{
+    DiscordMessenger::sendMessageToDiscord("Opening debugWindow: MILLER SEARCH VIEW", MessageType::DEBUG);
+    cv::namedWindow("MILLER SEARCH VIEW", cv::WINDOW_NORMAL);
+}
+
+void DebugRenderer::closeWindow()
+{
+    DiscordMessenger::sendMessageToDiscord("Closing debugWindow: MILLER SEARCH VIEW", MessageType::DEBUG);
+    cv::destroyWindow("MILLER SEARCH VIEW");
+}
+
+void DebugRenderer::renderSearchView(const cv::Mat& frame, const cv::Mat& mask)
+{
+    cv::Mat display;
+    cv::cvtColor(frame, display, cv::COLOR_GRAY2BGR);
+
+    // Overlay mask in red
+    cv::Mat redMask;
+    cv::cvtColor(mask, redMask, cv::COLOR_GRAY2BGR);
+    redMask.setTo(cv::Scalar(0,0,255), mask);
+
+    cv::addWeighted(display, 1.0, redMask, 0.5, 0, display);
+
+    cv::imshow("MILLER SEARCH VIEW", display);
+    cv::waitKey(1);
+}
 
 void DebugRenderer::render(cv::Mat& frame,
                            const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points,

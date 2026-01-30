@@ -21,11 +21,32 @@ Loop::Loop()
       , pid_(std::make_shared<PID>(SETTINGS::PID::KD, SETTINGS::PID::KI, SETTINGS::PID::KP))
       , speedGovernor_(std::make_shared<SpeedGovernor>())
       , vision_(std::make_shared<Vision>(imageProcessor_))
+#ifdef _WIN32
+      , shortKeyCommands_(std::make_shared<shortKeyCommands>())
+#endif
       , lineDetected_(true)
 {
-    if (!vision_ || !imageProcessor_ || !motorController_ || !pid_ || !speedGovernor_ || !controlExtractor_)
+    std::vector<std::string> failed;
+
+    if (!controlExtractor_) failed.emplace_back("ControlExtractor");
+    if (!imageProcessor_) failed.emplace_back("ImageProcessor");
+    if (!motorController_) failed.emplace_back("MotorController");
+    if (!pid_) failed.emplace_back("PID");
+    if (!speedGovernor_) failed.emplace_back("SpeedGovernor");
+    if (!vision_) failed.emplace_back("Vision");
+
+#ifdef _WIN32
+    if (!shortKeyCommands_) failed.emplace_back("ShortKeyCommands");
+#endif
+
+    if (!failed.empty())
     {
-        throw std::runtime_error("Loop subsystem not initialized correctly.");
+        std::ostringstream oss;
+        oss << "Loop subsystem initialization failed. Systems:";
+        for (const auto& name : failed)
+            oss << " " << name;
+
+        throw std::runtime_error(oss.str());
     }
 
     imageProcessor_->quadrantize(vision_);
@@ -45,6 +66,7 @@ void Loop::run()
             break;
         }
 
+        shortKeyCommands_->poll();
         loop();
     }
 }
@@ -63,7 +85,7 @@ void Loop::loop() const
     const DriveCommand cmd{speed, turnCorrection};
     motorController_->drive(cmd);
 
-    if (SETTINGS::CONTROL::DEBUG::ENABLE_DEBUG_VIEW)
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
     {
         cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();

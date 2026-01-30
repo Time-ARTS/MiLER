@@ -16,10 +16,21 @@ void MotorController::drive(const DriveCommand& cmd)
 
     commandHistory_.push_back({cmd, std::chrono::steady_clock::now()});
 
-    this->pwmDrive(left, right);
+    pwmDrive(left, right);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) DiscordMessenger::sendMessageToDiscord(
-        "Steering: LEFT - " + std::to_string(left) + " || RIGHT - " + std::to_string(right));
+    if (SETTINGS::CONTROL::MODULE::ENABLE_LOGGING && SETTINGS::CONTROL::MODULE::ENABLE_STEERING_COUNTER)
+    {
+        motorCommandLog_ += "Steering: LEFT - " + std::to_string(left) + " |.| RIGHT - " + std::to_string(right) + "\\n";
+
+        steeringCount_ = std::clamp(steeringCount_ + 1, 0, SETTINGS::MOTOR::STEERING_COUNT);
+
+        if (steeringCount_ == SETTINGS::MOTOR::STEERING_COUNT)
+        {
+            DiscordMessenger::sendMessageToDiscord(motorCommandLog_);
+            motorCommandLog_.clear();
+            steeringCount_ = 0;
+        }
+    }
 }
 
 void MotorController::backtrack(const std::chrono::milliseconds duration)

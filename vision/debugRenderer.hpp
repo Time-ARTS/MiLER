@@ -9,6 +9,9 @@
 class DebugRenderer
 {
 public:
+    static void openWindow();
+    static void closeWindow();
+    static void renderSearchView(const cv::Mat& frame, const cv::Mat& mask);
     static void render(cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points,
                        float deviation, float curvature, float turnCorrection, float speed);
 };

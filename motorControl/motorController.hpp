@@ -22,6 +22,8 @@ private:
     static void pwmDrive(float left, float right);
 
     std::vector<MotorCommandEntry> commandHistory_;
+    std::string motorCommandLog_;
+    int steeringCount_ = 0;
 };
 
 

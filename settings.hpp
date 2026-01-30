@@ -21,6 +21,17 @@ namespace SETTINGS
             constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(5);
         }
 
+        // --- MODULE FLAGS ---
+        namespace MODULE
+        {
+            inline bool ENABLE_DRIVING = true;
+            inline bool ENABLE_VISION = true;
+            inline bool ENABLE_DISCORD = true;
+            inline bool ENABLE_LOGGING = true;
+            inline bool ENABLE_DEBUG = true;
+            inline bool ENABLE_STEERING_COUNTER = true;
+        }
+
         // --- BUTTON ---
         namespace BUTTON
         {
@@ -33,22 +44,26 @@ namespace SETTINGS
             {
                 constexpr char START = 'r';
                 constexpr char QUIT = 'q';
+
+                namespace TOGGLES
+                {
+                    constexpr char DRIVING = '0';
+                    constexpr char VISION = '1';
+                    constexpr char DISCORD = '2';
+                    constexpr char LOGGING = '3';
+                    constexpr char DEBUG = '4';
+                    constexpr char STEERING_COUNTER = '5';
+
+                    static ToggleBinding TOGGLE_TABLE[] = {
+                        {DRIVING, &MODULE::ENABLE_DRIVING, "Toggle Driving"},
+                        {VISION, &MODULE::ENABLE_VISION, "Toggle Vision"},
+                        {DISCORD, &MODULE::ENABLE_DISCORD, "Toggle Discord"},
+                        {LOGGING, &MODULE::ENABLE_LOGGING, "Toggle Logging"},
+                        {DEBUG, &MODULE::ENABLE_DEBUG, "Toggle Debug View"},
+                        {STEERING_COUNTER, &MODULE::ENABLE_STEERING_COUNTER, "Toggle Steering Counter"}
+                    };
+                }
             }
-        }
-
-        // --- MODULE FLAGS ---
-        namespace MODULE
-        {
-            constexpr bool ENABLE_DRIVING = true;
-            constexpr bool ENABLE_VISION = true;
-            constexpr bool ENABLE_DISCORD = false;
-            constexpr bool ENABLE_LOGGING = true;
-        }
-
-        // --- DEBUGGING ---
-        namespace DEBUG
-        {
-            constexpr bool ENABLE_DEBUG_VIEW = true;
         }
 
         // --- THREAD ---
@@ -76,6 +91,7 @@ namespace SETTINGS
 
     namespace MOTOR
     {
+        constexpr int STEERING_COUNT = 50;
         constexpr int MAX_SPEED = 255;
         constexpr int MIN_SPEED = -255;
         constexpr int DEFAULT_SPEED = 150;
@@ -109,19 +125,17 @@ namespace SETTINGS
         constexpr int GAUSSIAN_BLUR_KERNEL = 5;
         constexpr double GAUSSIAN_SIGMA = 0.0;
 
-        constexpr double HOUGH_RHO = 1.0;
-        constexpr double HOUGH_THETA = PI / 180.0;
-        constexpr int HOUGH_THRESHOLD = 50;
-        constexpr int HOUGH_MIN_LINE = 50;
-        constexpr int HOUGH_MAX_GAP = 10;
+        constexpr int THRESHOLD_MIN = 100;
+        constexpr int THRESHOLD_MAX = 255;
+        constexpr float MIN_LINE_AREA = 0.0f;
     }
 
     // --- IMAGE PROCESSING ---
     namespace QUADRANT
     {
-        constexpr int NUM = 12;
+        constexpr int NUM = 24;
         constexpr float OFFSET_Y = 0.0f;
-        constexpr float SPACING_Y = 25.0f;
+        constexpr float SPACING_Y = 15.0f;
     }
 
     namespace LINE_THRESHOLD

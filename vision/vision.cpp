@@ -9,7 +9,7 @@
 Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
     : imageProcessor_(imageProcessor)
 {
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
 
     cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
 
@@ -37,32 +37,23 @@ cv::Mat Vision::getCurrentFrame()
     return currentFrame_;
 }
 
-bool Vision::detectedLine()
+bool Vision::detectedLine(cv::Mat* debugMask)
 {
     lineDetected_ = false;
 
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
 
     const cv::Mat frame = getCurrentFrame();
     if (frame.empty()) return false;
 
-    cv::Mat edges;
-    cv::Canny(frame, edges, SETTINGS::LINE_THRESHOLD::CANNY_LOW, SETTINGS::LINE_THRESHOLD::CANNY_HIGH);
+    cv::Mat mask;
+    cv::threshold(frame, mask, SETTINGS::VISION::THRESHOLD_MIN, SETTINGS::VISION::THRESHOLD_MAX, cv::THRESH_BINARY_INV);
 
-    std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(edges, lines, SETTINGS::VISION::HOUGH_RHO, SETTINGS::VISION::HOUGH_THETA,
-                    SETTINGS::VISION::HOUGH_THRESHOLD, SETTINGS::VISION::HOUGH_MIN_LINE,
-                    SETTINGS::VISION::HOUGH_MAX_GAP);
+    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, {5,5}));
+    cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, {9,9}));
 
-    if (!lines.empty())
-    {
-        const auto points = processFrame();
-        lineDetected_ = !points.empty();
-    }
+    if (debugMask) *debugMask = mask.clone();
 
-    DiscordMessenger::sendMessageToDiscord(
-        lineDetected_ ? "Line detected." : "Line not detected, trying again after delay.",
-        lineDetected_ ? MessageType::SUCCESS : MessageType::WARNING);
-
-    return lineDetected_;
+    const cv::Moments m = cv::moments(mask, true);
+    return m.m00 > SETTINGS::VISION::MIN_LINE_AREA;
 }

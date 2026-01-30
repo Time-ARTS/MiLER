@@ -42,9 +42,9 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
         {MessageType::SUCCESS, "SUCCESS"}
     };
 
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD)
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD)
     {
-        if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) return;
+        if (!SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) return;
 
         const std::string& typeStr = typeToString.at(type);
         std::cout << typeStr << ":  " << text << std::endl;

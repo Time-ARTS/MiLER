@@ -2,6 +2,7 @@
 #define MILLER_CONSTRUCTS_HPP
 
 #pragma once
+#include <string>
 
 constexpr double PI = 3.141592653589793238463;
 
@@ -14,6 +15,12 @@ struct Vector2
 
     Vector2 operator+(const Vector2& other) const { return {x + other.x, y + other.y}; }
     Vector2 operator-(const Vector2& other) const { return {x - other.x, y - other.y}; }
+};
+
+struct ToggleBinding {
+    char key;
+    bool* flag;
+    const std::string name;
 };
 
 struct ControlSignals

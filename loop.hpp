@@ -5,6 +5,10 @@
 #include <chrono>
 #include <memory>
 
+#ifdef _WIN32
+#include "shortKeyCommands.hpp"
+#endif
+
 class ControlExtractor;
 class ImageProcessor;
 class MotorController;
@@ -26,6 +30,10 @@ public:
     [[nodiscard]] std::shared_ptr<SpeedGovernor> getSpeedGovernor() const { return speedGovernor_; }
     [[nodiscard]] std::shared_ptr<Vision> getVision() const { return vision_; }
 
+#ifdef _WIN32
+    [[nodiscard]] std::shared_ptr<shortKeyCommands> getShortKeyCommands() const { return shortKeyCommands_; }
+#endif
+
 private:
     const std::shared_ptr<ControlExtractor> controlExtractor_;
     const std::shared_ptr<ImageProcessor> imageProcessor_;
@@ -33,6 +41,10 @@ private:
     const std::shared_ptr<PID> pid_;
     const std::shared_ptr<SpeedGovernor> speedGovernor_;
     const std::shared_ptr<Vision> vision_;
+
+#ifdef _WIN32
+    const std::shared_ptr<shortKeyCommands> shortKeyCommands_;
+#endif
 
     bool lineDetected_;
     std::chrono::time_point<std::chrono::steady_clock> lastLineTime_ = std::chrono::steady_clock::now();
