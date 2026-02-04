@@ -12,8 +12,7 @@ public:
     static void openWindow();
     static void closeWindow();
     static void renderSearchView(const cv::Mat& frame, const cv::Mat& mask);
-    static void render(cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points,
-                       float deviation, float curvature, float turnCorrection, float speed);
+    static void render(cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points, const std::vector<double>& line, const DriveCommand& cmd);
 };
 
 #endif //MILER_DEBUGRENDERER_HPP

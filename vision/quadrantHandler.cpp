@@ -6,6 +6,8 @@
 #include "../settings.hpp"
 #include <opencv2/opencv.hpp>
 
+#include "discordMessaging/discordMessaging.hpp"
+
 using namespace SETTINGS;
 
 Vector2 Quadrant::self(const cv::Mat& frame) const
@@ -87,5 +89,7 @@ std::vector<Vector2> ImageProcessor::processQuadrants(const cv::Mat& frame)
         tempHistory_.pop_front();
     }
 
+    if (CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Quadrants solved", MessageType::SUCCESS);
     return lineMidpoints_;
 }

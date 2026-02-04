@@ -56,13 +56,25 @@ void Loop::run(const std::atomic<bool>& running)
 
     while (true)
     {
+        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+            DiscordMessenger::sendMessageToDiscord("LineTest activated", MessageType::INFO);
+
         lineTest();
+
+        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        {
+            DiscordMessenger::sendMessageToDiscord(lineDetected_ ? "LineTest computed successfully, line detected. **CONTINUING**" : "LineTest computed successfully, line not found. **EXITING**"
+                , lineDetected_ ? MessageType::SUCCESS : MessageType::WARNING);
+        }
 
         if (!lineDetected_ || !running)
         {
             DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
             break;
         }
+
+        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+            DiscordMessenger::sendMessageToDiscord("Checking for activated keys", MessageType::INFO);
 
         shortKeyCommands_->poll();
 
@@ -72,23 +84,37 @@ void Loop::run(const std::atomic<bool>& running)
 
 void Loop::loop() const
 {
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Loop itteration started.", MessageType::INFO);
+
     const auto points = vision_->processFrame();
 
-    const auto [deviation, curvature] = controlExtractor_->extract(points);
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Points processed successfully, continuing to line estimation", MessageType::SUCCESS);
 
-    constexpr float dt = SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS / 1000.0f;
-    const float turnCorrection = pid_->compute(deviation, dt);
+    const auto line = controlExtractor_->createLine(points);
 
-    const float speed = speedGovernor_->compute(curvature, SETTINGS::MOTOR::DEFAULT_SPEED);
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Line estimated successfully, continuing to correction and speed estimation", MessageType::SUCCESS);
 
-    const DriveCommand cmd{speed, turnCorrection};
+    const auto lineCorrected = pid_->compute(line);
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Correction completed successfully, waiting for speed estimation", MessageType::SUCCESS);
+
+    const auto speed = speedGovernor_->compute(line);
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Speed estimation completed successfully, sending drive commands to motors", MessageType::SUCCESS);
+
+    const DriveCommand cmd{speed, lineCorrected};
     motorController_->drive(cmd);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
     {
         cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();
-        DebugRenderer::render(frame, quadrants, points, deviation, curvature, turnCorrection, speed);
+        DebugRenderer::render(frame, quadrants, points, line, cmd);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));

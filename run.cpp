@@ -107,29 +107,32 @@ int main()
         {
             keys->poll();
 
-            if (running && MODULE::ENABLE_VISION && MODULE::ENABLE_DEBUG)
+            if (running && MODULE::ENABLE_VISION)
             {
                 if (const auto vision = loop.getVision())
                 {
                     cv::Mat mask;
                     lineDetected = vision->detectedLine(&mask);
 
-                    if (!MODULE::ENABLE_DRIVING || !lineDetected)
+                    if (MODULE::ENABLE_DEBUG)
                     {
-                        if (!searchWindowOpen)
+                        if (!MODULE::ENABLE_DRIVING || !lineDetected)
                         {
-                            DebugRenderer::openWindow();
-                            searchWindowOpen = true;
-                        }
+                            if (!searchWindowOpen)
+                            {
+                                DebugRenderer::openWindow();
+                                searchWindowOpen = true;
+                            }
 
-                        DebugRenderer::renderSearchView(vision->getCurrentFrame(), mask);
-                    }
-                    else
-                    {
-                        if (searchWindowOpen)
+                            DebugRenderer::renderSearchView(vision->getCurrentFrame(), mask);
+                        }
+                        else
                         {
-                            DebugRenderer::closeWindow();
-                            searchWindowOpen = false;
+                            if (searchWindowOpen)
+                            {
+                                DebugRenderer::closeWindow();
+                                searchWindowOpen = false;
+                            }
                         }
                     }
                 }
@@ -138,6 +141,8 @@ int main()
             if (running && lineDetected && MODULE::ENABLE_DRIVING)
             {
                 lastActivity = std::chrono::steady_clock::now();
+
+                DiscordMessenger::sendMessageToDiscord("Line detected. Starting loop...", MessageType::SUCCESS);
                 loop.run(running);
             }
             else
@@ -161,7 +166,8 @@ int main()
                     MessageType::WARNING
                 );
 
-                DebugRenderer::closeWindow();
+                if (MODULE::ENABLE_DEBUG)
+                    DebugRenderer::closeWindow();
             }
 
 #ifdef _WIN32

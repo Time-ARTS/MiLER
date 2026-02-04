@@ -9,12 +9,10 @@
 class ControlExtractor
 {
 public:
-    static ControlSignals extract(const std::vector<Vector2>& points);
+    static std::vector<double> createLine(const std::vector<Vector2>& points);
 
-private:
-    static Vector2 computeMeanVector(const std::vector<Vector2>& points);
-    static float computeDeviation(const Vector2& vector);
-    static float computeCurvature(const std::vector<Vector2>& points);
+    private:
+    static std::tuple<cv::Mat, cv::Mat> computeMatrix(const std::vector<Vector2>& points);
 };
 
 

@@ -34,6 +34,8 @@ cv::Mat Vision::getCurrentFrame()
         cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL),
         SETTINGS::VISION::GAUSSIAN_SIGMA);
 
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Frame grabbed succsessfully", MessageType::SUCCESS);
     return currentFrame_;
 }
 

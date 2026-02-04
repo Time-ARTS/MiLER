@@ -4,6 +4,7 @@
 #pragma once
 #include <functional>
 #include <string>
+#include <opencv2/imgproc.hpp>
 
 constexpr double PI = 3.141592653589793238463;
 
@@ -29,20 +30,16 @@ struct Trigger {
     int key;
 };
 
-struct ControlSignals
-{
-    float deviation;
-    float curvature;
-};
-
 struct DriveCommand
 {
-    float speed;
-    float turn;
+    double speed;
+    double correction;
 
-    [[nodiscard]] std::pair<float, float> motorCommand() const
+    [[nodiscard]] std::pair<double, double> motorCommand() const
     {
-        return {speed - turn, speed + turn};
+        const auto left = std::clamp(speed + correction, 0.0, 100.0);
+        const auto right = std::clamp(speed - correction, 0.0, 100.0);
+        return {left, right};
     }
 };
 
@@ -54,5 +51,4 @@ enum class MessageType
     DEBUG,
     SUCCESS
 };
-
 #endif //MILLER_CONSTRUCTS_HPP

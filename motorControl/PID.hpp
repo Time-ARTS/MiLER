@@ -1,5 +1,6 @@
 #ifndef MILLER_PID_HPP
 #define MILLER_PID_HPP
+#include <vector>
 
 class PID
 {
@@ -9,7 +10,8 @@ public:
     {
     }
 
-    float compute(float error, float dt);
+    float compute(float error);
+    double compute(const std::vector<double>& error);
 
 private:
     float kp_, ki_, kd_;

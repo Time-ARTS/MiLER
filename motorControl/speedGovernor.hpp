@@ -1,13 +1,12 @@
 #ifndef MILER_SPEEDGOVENOR_HPP
 #define MILER_SPEEDGOVENOR_HPP
+#include <vector>
 
 class SpeedGovernor
 {
 public:
-    static float compute(float curvature, float baseSpeed);
-
-private:
-    constexpr static float curvatureGain = 0.5f;
+    static double compute(double curvature);
+    static double compute(const std::vector<double>& line);
 };
 
 #endif //MILER_SPEEDGOVENOR_HPP

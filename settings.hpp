@@ -9,6 +9,19 @@
 
 namespace SETTINGS
 {
+    namespace PHYSICAL_DETAILS
+    {
+        constexpr float WEIGHT = 0.5f; // KG
+        constexpr float WHEEL_RADIUS = 1.f; // cm
+        constexpr float WHEELBASE = 25.f; // cm
+    }
+    namespace SCREEN
+    {
+        constexpr int CENTER_X = 320;
+        constexpr int CENTER_Y = 480;
+        constexpr float THETA = 0.f;
+    }
+
     // --- CONTROL / RUNTIME ---
     namespace CONTROL
     {
@@ -26,10 +39,10 @@ namespace SETTINGS
         {
             inline bool ENABLE_DRIVING = true;
             inline bool ENABLE_VISION = true;
-            inline bool ENABLE_DISCORD = true;
-            inline bool ENABLE_LOGGING = true;
+            inline bool ENABLE_DISCORD = false;
+            inline bool ENABLE_LOGGING = false;
             inline bool ENABLE_DEBUG = true;
-            inline bool ENABLE_STEERING_COUNTER = true;
+            inline bool ENABLE_STEERING_COUNTER = false;
         }
 
         // --- BUTTON ---
@@ -94,7 +107,7 @@ namespace SETTINGS
         constexpr int STEERING_COUNT = 50;
         constexpr int MAX_SPEED = 255;
         constexpr int MIN_SPEED = -255;
-        constexpr int DEFAULT_SPEED = 150;
+        constexpr int DEFAULT_SPEED = 255;
 
         namespace PIN
         {
@@ -157,6 +170,17 @@ namespace SETTINGS
         constexpr double KP = 0.5;
         constexpr double KI = 0.0;
         constexpr double KD = 0.1;
+    }
+
+    namespace LINE_CONTROL
+    {
+        const std::vector<double> DEFAULT_CENTERLINE(480, 320);
+        constexpr int STEPS_COUNT = 200;
+    }
+
+    namespace SPEED_GOVERNOR
+    {
+        constexpr float CURVATURE_GAIN = 0.5f;
     }
 }
 
