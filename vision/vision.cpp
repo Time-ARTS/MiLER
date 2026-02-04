@@ -18,7 +18,8 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         throw std::runtime_error("Could not open camera.");
     }
 
-    if (cv::Mat testFrame; !cap_.read(testFrame) || testFrame.empty())
+    cv::Mat testFrame;
+    if (!cap_.read(testFrame) || testFrame.empty())
     {
         throw std::runtime_error("Failed to grab a frame from the camera.");
     }
@@ -32,6 +33,13 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         cameraInfo += " | backend: " + std::to_string(backend);
 
         DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);
+    }
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    {
+        cv::imshow("Camera Test Frame", testFrame);
+        cv::waitKey(3000);
+        cv::destroyWindow("Camera Test Frame");
     }
 }
 
