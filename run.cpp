@@ -95,7 +95,7 @@ int main()
 #ifdef __linux__
         keys->addTrigger(BUTTON::KEY::START, [&]
         {
-            return (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH))
+            return (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
         });
 #endif
 
