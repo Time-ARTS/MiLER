@@ -22,9 +22,7 @@ Loop::Loop()
       , pid_(std::make_shared<PID>(SETTINGS::PID::KD, SETTINGS::PID::KI, SETTINGS::PID::KP))
       , speedGovernor_(std::make_shared<SpeedGovernor>())
       , vision_(std::make_shared<Vision>(imageProcessor_))
-#ifdef _WIN32
       , shortKeyCommands_(std::make_shared<shortKeyCommands>())
-#endif
       , lineDetected_(true)
 {
     std::vector<std::string> failed;
