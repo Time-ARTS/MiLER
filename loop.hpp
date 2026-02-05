@@ -5,6 +5,8 @@
 #include <chrono>
 #include <memory>
 
+#include "motorControl/motorController.hpp"
+
 class ControlExtractor;
 class ImageProcessor;
 class MotorController;
@@ -19,6 +21,8 @@ public:
     Loop();
 
     void run(const std::atomic<bool>& running);
+
+    void motorTest() const { motorController_->selfTest(); }
 
     [[nodiscard]] std::shared_ptr<ControlExtractor> getControlExtractor() const { return controlExtractor_; }
     [[nodiscard]] std::shared_ptr<ImageProcessor> getImageProcessor() const { return imageProcessor_; }

@@ -10,6 +10,36 @@
 #include <softPwm.h>
 #endif
 
+bool MotorController::selfTest()
+{
+    DiscordMessenger::sendMessageToDiscord("Motor self-test started...", MessageType::INFO);
+
+    try
+    {
+        pwmDrive(120, 0);   // Left forward
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        pwmDrive(0, 120);   // Right forward
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        pwmDrive(120, 120); // Both forward
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        pwmDrive(-120, -120); // Both reverse
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        pwmDrive(0, 0); // Stop
+
+        DiscordMessenger::sendMessageToDiscord("Motor self-test passed", MessageType::SUCCESS);
+        return true;
+    }
+    catch (...)
+    {
+        DiscordMessenger::sendMessageToDiscord("Motor self-test FAILED", MessageType::ERROR);
+        return false;
+    }
+}
+
 void MotorController::drive(const DriveCommand& cmd)
 {
     auto [left, right] = cmd.motorCommand();

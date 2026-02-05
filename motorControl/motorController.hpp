@@ -14,6 +14,7 @@ struct MotorCommandEntry
 class MotorController
 {
 public:
+    static bool selfTest();
     void drive(const DriveCommand& cmd);
 
     void backtrack(std::chrono::milliseconds duration);
