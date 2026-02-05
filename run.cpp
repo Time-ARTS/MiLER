@@ -49,7 +49,7 @@ int main()
         softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255);
         softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255);
 
-        digitalWrite(SETTINGS::MOTOR::PIN::STOP_PIN, HIGH);
+        digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
 #endif
 
         const auto programStartTime = std::chrono::steady_clock::now();
