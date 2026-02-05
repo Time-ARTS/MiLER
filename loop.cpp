@@ -1,6 +1,6 @@
 #include "loop.hpp"
 #include "settings.hpp"
-#include "shortKeyCommands.hpp"
+#include "shortKeyCommands/shortKeyCommands.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
 #include "vision/vision.hpp"

@@ -1,5 +1,5 @@
 #include "settings.hpp"
-#include "shortKeyCommands.hpp"
+#include "shortKeyCommands/shortKeyCommands.hpp"
 #include "loop.hpp"
 
 #include "vision/vision.hpp"

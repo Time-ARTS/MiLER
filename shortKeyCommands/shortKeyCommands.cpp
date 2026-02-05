@@ -1,6 +1,6 @@
 #include "shortKeyCommands.hpp"
-#include "settings.hpp"
-#include "constructs.hpp"
+#include "../settings.hpp"
+#include "../constructs.hpp"
 
 #ifdef _WIN32
 #include <conio.h>
@@ -13,7 +13,7 @@
 #endif
 
 
-#include "discordMessaging/discordMessaging.hpp"
+#include "../discordMessaging/discordMessaging.hpp"
 
 shortKeyCommands::shortKeyCommands()
 {
