@@ -38,10 +38,6 @@ int main()
         pinMode(BUTTON::START_STOP_PIN, INPUT);
         pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
 
-        pinMode(SETTINGS::LED_PINS::ACTIVE_LED, OUTPUT);
-        pinMode(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, OUTPUT);
-        pinMode(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, OUTPUT);
-
         pinMode(SETTINGS::MOTOR::PIN::EN_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN1_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN2_LEFT, OUTPUT);
@@ -52,6 +48,8 @@ int main()
 
         softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255);
         softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255);
+
+        digitalWrite(SETTINGS::MOTOR::PIN::STOP_PIN, HIGH);
 #endif
 
         const auto programStartTime = std::chrono::steady_clock::now();
@@ -62,10 +60,6 @@ int main()
         keys->bind(BUTTON::KEY::START, [&running, &lastActivity]
         {
             running = !running;
-
-#ifdef __linux__
-            digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, running ? HIGH : LOW);
-#endif
 
             DiscordMessenger::sendMessageToDiscord(
                 running ? "Robot started. Searching for line..." : "Robot stopped.",
@@ -157,10 +151,6 @@ int main()
                 running = false;
                 searchWindowOpen = false;
 
-#ifdef __linux__
-                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
-#endif
-
                 DiscordMessenger::sendMessageToDiscord(
                     "Line not found in time. Soft stop.",
                     MessageType::WARNING
@@ -182,11 +172,6 @@ int main()
             if (now - programStartTime > TIME::MAX_SYSTEM_RUNTIME)
             {
                 DiscordMessenger::sendMessageToDiscord("Max runtime reached. Shutting down.", MessageType::WARNING);
-
-                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED, LOW);
-                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_LEFT, LOW);
-                digitalWrite(SETTINGS::LED_PINS::ACTIVE_LED_RIGHT, LOW);
-
                 exit(EXIT_SUCCESS);
             }
 #endif
