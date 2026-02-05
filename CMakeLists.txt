@@ -11,17 +11,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 message(STATUS "Configuring for platform: ${CMAKE_SYSTEM_NAME}")
 
 # ---- OpenCV ----
-if(WIN32)
+if (WIN32)
     set(OpenCV_DIR "C:/opencv/build/x64/vc16/lib") # Change to your OpenCV install
-endif()
+endif ()
 find_package(OpenCV REQUIRED)
 
 # ---- CURL ----
-if(UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE)
     find_package(CURL REQUIRED)
     set(CURL_TARGET CURL::libcurl)
     message(STATUS "Using system libcurl")
-else()
+else ()
     message(STATUS "Fetching curl via FetchContent")
     FetchContent_Declare(
             curl
@@ -34,12 +34,12 @@ else()
     FetchContent_MakeAvailable(curl)
 
     set(CURL_TARGET libcurl)
-endif()
+endif ()
 
 # ---- WiringPi (RPi only) ----
-if(UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE)
     find_library(WIRINGPI_LIB NAMES wiringPi)
-endif()
+endif ()
 
 # ---- Include Directories ----
 include_directories(
@@ -47,15 +47,18 @@ include_directories(
         ${CMAKE_SOURCE_DIR}
 )
 
-# ---- Source Files ----
+# ---- Source Files (common) ----
 set(SOURCES
         loop.cpp
         run.cpp
+        shortKeyCommands.cpp
         vision/vision.cpp
+        vision/debugRenderer.cpp
         vision/quadrantHandler.cpp
         motorControl/PID.cpp
-        motorControl/vectorTranslator.cpp
+        motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
+        motorControl/speedGovernor.cpp
         discordMessaging/discordMessaging.cpp
 )
 
@@ -63,25 +66,27 @@ set(HEADERS
         constructs.hpp
         loop.hpp
         settings.hpp
+        shortKeyCommands.hpp
         vision/vision.hpp
+        vision/debugRenderer.hpp
         vision/quadrantHandler.hpp
         motorControl/PID.hpp
-        motorControl/vectorTranslator.hpp
+        motorControl/controlExtractor.hpp
         motorControl/motorController.hpp
+        motorControl/speedGovernor.hpp
         discordMessaging/discordMessaging.hpp
 )
 
-# ---- Executable ----
 add_executable(MiLER ${SOURCES} ${HEADERS})
 
 # ---- Windows: ensure OpenCV DLLs are found at runtime ----
-if(WIN32)
+if (WIN32)
     add_custom_command(TARGET MiLER POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${OpenCV_DIR}/../bin"
             $<TARGET_FILE_DIR:MiLER>
     )
-endif()
+endif ()
 
 # ---- Link Libraries ----
 target_link_libraries(MiLER
@@ -90,6 +95,6 @@ target_link_libraries(MiLER
 )
 
 # ---- WiringPi ----
-if(WIRINGPI_LIB)
+if (WIRINGPI_LIB)
     target_link_libraries(MiLER ${WIRINGPI_LIB})
-endif()
+endif ()

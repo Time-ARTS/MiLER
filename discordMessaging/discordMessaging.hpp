@@ -6,8 +6,11 @@
 #include <string>
 #include "constructs.hpp"
 
-class DiscordMessenger {
+class DiscordMessenger
+{
 public:
+    static void init();
+    static void shutdown();
     static void sendMessageToDiscord(const std::string& text, const MessageType& type = MessageType::INFO);
 };
 

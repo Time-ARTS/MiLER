@@ -1,48 +1,85 @@
 #include "vision.hpp"
 #include "../settings.hpp"
 #include "quadrantHandler.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
-#include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
+#include "discordMessaging/discordMessaging.hpp"
 
-Vision::Vision() {
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
+    : imageProcessor_(imageProcessor)
+{
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+
     cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
 
-    if (!cap_.isOpened()) {
+    if (!cap_.isOpened())
+    {
         throw std::runtime_error("Could not open camera.");
+    }
+
+    cv::Mat testFrame;
+    if (!cap_.read(testFrame) || testFrame.empty())
+    {
+        throw std::runtime_error("Failed to grab a frame from the camera.");
+    }
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    {
+        std::string cameraInfo = "Camera opened successfully: index "
+            + std::to_string(SETTINGS::VISION::CAMERA_INDEX);
+
+        const int backend = cap_.get(cv::CAP_PROP_BACKEND);
+        cameraInfo += " | backend: " + std::to_string(backend);
+
+        DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);
+    }
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    {
+        cv::imshow("Camera Test Frame", testFrame);
+        cv::waitKey(3000);
+        cv::destroyWindow("Camera Test Frame");
     }
 }
 
-cv::Mat Vision::getCurrentFrame() {
+cv::Mat Vision::getCurrentFrame()
+{
     if (!cap_.isOpened())
         throw std::runtime_error("Camera not opened.");
 
-    if (!cap_.read(currentFrame_)) {
+    if (!cap_.read(currentFrame_))
         throw std::runtime_error("Could not read frame from camera.");
-    }
 
+    cv::cvtColor(currentFrame_, currentFrame_, cv::COLOR_BGR2GRAY);
+
+    cv::GaussianBlur(
+        currentFrame_, currentFrame_,
+        cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL),
+        SETTINGS::VISION::GAUSSIAN_SIGMA);
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord("Frame grabbed succsessfully", MessageType::SUCCESS);
     return currentFrame_;
 }
 
-bool Vision::detectedLine() {
-    if constexpr (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
-    if (const cv::Mat frame = getCurrentFrame(); frame.empty()) return false;
+bool Vision::detectedLine(cv::Mat* debugMask)
+{
+    lineDetected_ = false;
 
-    cv::Mat gray, edges;
-    cv::cvtColor(currentFrame_, gray, cv::COLOR_BGR2GRAY);
-    cv::GaussianBlur(gray, gray, cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL), SETTINGS::VISION::GAUSSIAN_SIGMA);
-    cv::Canny(gray, edges, SETTINGS::LINE_THRESHOLD::CANNY_LOW, SETTINGS::LINE_THRESHOLD::CANNY_HIGH);
+    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
 
-    std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(edges, lines, SETTINGS::VISION::HOUGH_RHO, SETTINGS::VISION::HOUGH_THETA, SETTINGS::VISION::HOUGH_THRESHOLD, SETTINGS::VISION::HOUGH_MIN_LINE, SETTINGS::VISION::HOUGH_MAX_GAP);
-
-    return !lines.empty();
-}
-
-std::vector<Vector2> Vision::processFrame(const std::shared_ptr<ImageProcessor>& ip) {
     const cv::Mat frame = getCurrentFrame();
-    return ip->processQuadrants(frame);
+    if (frame.empty()) return false;
+
+    cv::Mat mask;
+    cv::threshold(frame, mask, SETTINGS::VISION::THRESHOLD_MIN, SETTINGS::VISION::THRESHOLD_MAX, cv::THRESH_BINARY_INV);
+
+    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, {5,5}));
+    cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, {9,9}));
+
+    if (debugMask) *debugMask = mask.clone();
+
+    const cv::Moments m = cv::moments(mask, true);
+    return m.m00 > SETTINGS::VISION::MIN_LINE_AREA;
 }

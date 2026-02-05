@@ -5,9 +5,26 @@
 
 #include "../constructs.hpp"
 
-class MotorController {
-public:
-    static void drive(Speed speed);
+struct MotorCommandEntry
+{
+    DriveCommand cmd{};
+    std::chrono::steady_clock::time_point timestamp;
 };
+
+class MotorController
+{
+public:
+    void drive(const DriveCommand& cmd);
+
+    void backtrack(std::chrono::milliseconds duration);
+
+private:
+    static void pwmDrive(float left, float right);
+
+    std::vector<MotorCommandEntry> commandHistory_;
+    std::string motorCommandLog_;
+    int steeringCount_ = 0;
+};
+
 
 #endif // MOTORCONTROLLER_HPP

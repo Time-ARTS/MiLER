@@ -7,18 +7,24 @@
 
 #include "quadrantHandler.hpp"
 
-class Vision {
+class Vision
+{
     cv::VideoCapture cap_;
     cv::Mat currentFrame_;
-    
-    public:
-    Vision();
+
+public:
+    explicit Vision(const std::shared_ptr<ImageProcessor>& imageProcessor);
     cv::Mat getCurrentFrame();
 
-    bool detectedLine();
-    std::vector<Vector2> processFrame(const std::shared_ptr<ImageProcessor>& ip);
+    bool detectedLine(cv::Mat* debugMask);
+    std::vector<Vector2> processFrame() const { return imageProcessor_->processQuadrants(currentFrame_); }
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
+
+private:
+    const std::shared_ptr<ImageProcessor>& imageProcessor_;
+
+    bool lineDetected_ = false;
 };
 
 #endif //MILLER_VISION_HPP
