@@ -68,7 +68,7 @@ void Loop::run(const std::atomic<bool>& running)
         if (!lineDetected_ || !running)
         {
             DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
-            motorController_.turnOffMotors();
+            motorController_->turnOffMotors();
             break;
         }
 
