@@ -113,7 +113,7 @@ namespace SETTINGS
             constexpr int IN1_RIGHT = 23;
             constexpr int IN2_RIGHT = 24;
 
-            constexpr int STANDBY = 5;
+            constexpr int STANDBY = 26;
         }
     }
 
