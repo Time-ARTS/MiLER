@@ -16,15 +16,19 @@ bool MotorController::selfTest()
 
     try
     {
+        DiscordMessenger::sendMessageToDiscord("Motor Left driving: 120", MessageType::INFO);
         pwmDrive(120, 0);   // Left forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+        DiscordMessenger::sendMessageToDiscord("Motor Right driving: 120", MessageType::INFO);
         pwmDrive(0, 120);   // Right forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+        DiscordMessenger::sendMessageToDiscord("Motor Both driving: 120", MessageType::INFO);
         pwmDrive(120, 120); // Both forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+        DiscordMessenger::sendMessageToDiscord("Motor Both driving: -120", MessageType::INFO);
         pwmDrive(-120, -120); // Both reverse
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 

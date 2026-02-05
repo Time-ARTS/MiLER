@@ -48,8 +48,10 @@ int main()
         pinMode(SETTINGS::MOTOR::PIN::IN1_RIGHT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN2_RIGHT, OUTPUT);
 
-        softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255);
-        softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255);
+        if (softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255) != 0)
+            DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_LEFT", MessageType::ERROR);
+        if (softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255) != 0)
+            DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_RIGHT", MessageType::ERROR);
 
         digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
 
@@ -64,6 +66,14 @@ int main()
         keys->bind(BUTTON::KEY::START, [&running, &lastActivity]
         {
             running = !running;
+
+#ifdef __linux__
+            if (!running)
+            {
+                softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT, 0);
+                softPwmWrite(SETTINGS::MOTOR::PIN::EN_RIGHT, 0);
+            }
+#endif
 
             DiscordMessenger::sendMessageToDiscord(
                 running ? "Robot started. Searching for line..." : "Robot stopped.",
