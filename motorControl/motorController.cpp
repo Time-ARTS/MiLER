@@ -64,8 +64,8 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
 void MotorController::pwmDrive(const float left, const float right)
 {
 #ifdef __linux__
-    const int pwmLeft = std::clamp(static_cast<int>(std::abs(left) * 255), 0, 255);
-    const int pwmRight = std::clamp(static_cast<int>(std::abs(right) * 255), 0, 255);
+    const int pwmLeft = static_cast<int>(std::abs(left));
+    const int pwmRight = static_cast<int>(std::abs(right));
 
     // LEFT motor direction
     digitalWrite(SETTINGS::MOTOR::PIN::IN1_LEFT, left >= 0 ? HIGH : LOW);

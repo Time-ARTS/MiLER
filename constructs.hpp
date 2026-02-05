@@ -4,7 +4,8 @@
 #pragma once
 #include <functional>
 #include <string>
-#include <opencv2/imgproc.hpp>
+
+#include "settings.hpp"
 
 constexpr double PI = 3.141592653589793238463;
 
@@ -37,8 +38,11 @@ struct DriveCommand
 
     [[nodiscard]] std::pair<double, double> motorCommand() const
     {
-        const auto left = std::clamp(speed + correction, 0.0, 100.0);
-        const auto right = std::clamp(speed - correction, 0.0, 100.0);
+        constexpr auto min = SETTINGS::MOTOR::MIN_SPEED;
+        constexpr auto max = SETTINGS::MOTOR::MAX_SPEED;
+
+        const auto left = std::clamp(speed + correction, min, max);
+        const auto right = std::clamp(speed - correction, min, max);
         return {left, right};
     }
 };

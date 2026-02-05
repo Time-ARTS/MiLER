@@ -98,8 +98,8 @@ namespace SETTINGS
     // --- GPIO / HARDWARE ---
     namespace MOTOR
     {
-        constexpr int MAX_SPEED = 255;
-        constexpr int MIN_SPEED = -255;
+        constexpr double MAX_SPEED = 255.0f;
+        constexpr double MIN_SPEED = -255.0f;
         constexpr int DEFAULT_SPEED = 255;
         constexpr int STEERING_COUNT = 50;
 

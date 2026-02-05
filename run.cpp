@@ -38,6 +38,8 @@ int main()
         pinMode(BUTTON::START_STOP_PIN, INPUT);
         pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
 
+        pinMode(SETTINGS::MOTOR::PIN::STANDBY, OUTPUT);
+
         pinMode(SETTINGS::MOTOR::PIN::EN_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN1_LEFT, OUTPUT);
         pinMode(SETTINGS::MOTOR::PIN::IN2_LEFT, OUTPUT);
