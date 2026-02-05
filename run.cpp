@@ -67,14 +67,6 @@ int main()
         {
             running = !running;
 
-#ifdef __linux__
-            if (!running)
-            {
-                softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT, 0);
-                softPwmWrite(SETTINGS::MOTOR::PIN::EN_RIGHT, 0);
-            }
-#endif
-
             DiscordMessenger::sendMessageToDiscord(
                 running ? "Robot started. Searching for line..." : "Robot stopped.",
                 MessageType::SUCCESS

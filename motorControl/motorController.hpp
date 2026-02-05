@@ -15,6 +15,7 @@ class MotorController
 {
 public:
     static bool selfTest();
+    static void turnOffMotors();
     void drive(const DriveCommand& cmd);
 
     void backtrack(std::chrono::milliseconds duration);

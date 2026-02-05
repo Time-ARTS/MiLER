@@ -44,6 +44,11 @@ bool MotorController::selfTest()
     }
 }
 
+void MotorController::turnOffMotors()
+{
+    pwmDrive(0, 0);
+}
+
 void MotorController::drive(const DriveCommand& cmd)
 {
     auto [left, right] = cmd.motorCommand();
