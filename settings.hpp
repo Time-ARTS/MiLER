@@ -31,9 +31,9 @@ namespace SETTINGS
         {
             inline bool ENABLE_DRIVING = true;
             inline bool ENABLE_VISION = true;
-            inline bool ENABLE_DISCORD = true;
+            inline bool ENABLE_DISCORD = false;
             inline bool ENABLE_LOGGING = false;
-            inline bool ENABLE_DEBUG = true;
+            inline bool ENABLE_DEBUG = false;
             inline bool ENABLE_STEERING_COUNTER = false;
         }
 
