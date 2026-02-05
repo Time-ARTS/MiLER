@@ -9,12 +9,13 @@
 
 namespace SETTINGS
 {
-    namespace PHYSICAL_DETAILS
+    namespace PHYSICAL
     {
         constexpr float WEIGHT = 0.5f; // KG
         constexpr float WHEEL_RADIUS = 1.f; // cm
         constexpr float WHEELBASE = 25.f; // cm
     }
+
     namespace SCREEN
     {
         constexpr int CENTER_X = 320;
@@ -25,15 +26,6 @@ namespace SETTINGS
     // --- CONTROL / RUNTIME ---
     namespace CONTROL
     {
-        // --- TIMING ---
-        namespace TIME
-        {
-            constexpr auto SLEEP_TIME = std::chrono::seconds(60);
-            constexpr auto BACKTRACK_DURATION = std::chrono::milliseconds(10);
-            constexpr auto MAX_WAIT_TIME = std::chrono::seconds(10);
-            constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(5);
-        }
-
         // --- MODULE FLAGS ---
         namespace MODULE
         {
@@ -43,6 +35,29 @@ namespace SETTINGS
             inline bool ENABLE_LOGGING = false;
             inline bool ENABLE_DEBUG = true;
             inline bool ENABLE_STEERING_COUNTER = false;
+        }
+
+        // --- TIMING ---
+        namespace TIME
+        {
+            constexpr auto SLEEP_TIME = std::chrono::seconds(60);
+            constexpr auto BACKTRACK_DURATION = std::chrono::milliseconds(10);
+            constexpr auto MAX_WAIT_TIME = std::chrono::seconds(10);
+            constexpr auto MAX_SYSTEM_RUNTIME = std::chrono::minutes(5);
+        }
+
+        // --- THREAD ---
+        namespace THREAD
+        {
+            constexpr int ROBOT_LOOP_INTERVAL_MS = 30;
+        }
+
+        // --- DISCORD ---
+        namespace DISCORD
+        {
+            constexpr char WEBHOOK_URL[] = "https://discord.com/api/webhooks/1461702296311169086/"
+                "XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2";
+            constexpr int RETRY_DELAY_MS = 2000;
         }
 
         // --- BUTTON ---
@@ -78,36 +93,15 @@ namespace SETTINGS
                 }
             }
         }
-
-        // --- THREAD ---
-        namespace THREAD
-        {
-            constexpr int ROBOT_LOOP_INTERVAL_MS = 30;
-        }
-
-        // --- DISCORD ---
-        namespace DISCORD
-        {
-            constexpr char WEBHOOK_URL[] = "https://discord.com/api/webhooks/1461702296311169086/"
-                "XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2";
-            constexpr int RETRY_DELAY_MS = 2000;
-        }
     }
 
     // --- GPIO / HARDWARE ---
-    namespace LED_PINS
-    {
-        constexpr int ACTIVE_LED = 17;
-        constexpr int ACTIVE_LED_LEFT = 16;
-        constexpr int ACTIVE_LED_RIGHT = 26;
-    }
-
     namespace MOTOR
     {
-        constexpr int STEERING_COUNT = 50;
         constexpr int MAX_SPEED = 255;
         constexpr int MIN_SPEED = -255;
         constexpr int DEFAULT_SPEED = 255;
+        constexpr int STEERING_COUNT = 50;
 
         namespace PIN
         {
@@ -124,6 +118,20 @@ namespace SETTINGS
     // --- VISION / CV ---
     namespace VISION
     {
+        constexpr bool AUTO_DETECT_CAMERA = true;
+        constexpr int MAX_VIDEO_DEVICES = 40;
+
+        inline const std::unordered_map<std::string, int> CAMERA_PRIORITY = {
+            {"Raspberry Pi", 0},
+            {"B525 HD Webcam", 1},
+
+            {"Webcam", 10},
+            {"Logitech", 11},
+            {"Microsoft LifeCam", 12},
+            {"HP", 13},
+            {"Dell", 14}
+        };
+
 #ifdef __linux__
         constexpr int CAMERA_INDEX = 0;
         constexpr auto CAMERA_SOURCE = cv::CAP_V4L2;
@@ -134,6 +142,8 @@ namespace SETTINGS
         constexpr int CAMERA_INDEX = 0;
         constexpr auto CAMERA_SOURCE = cv::CAP_ANY;
 #endif
+
+        constexpr int MAX_TEST_ATTEMPTS = 10;
 
         constexpr int GAUSSIAN_BLUR_KERNEL = 5;
         constexpr double GAUSSIAN_SIGMA = 0.0;
@@ -151,31 +161,22 @@ namespace SETTINGS
         constexpr float SPACING_Y = 15.0f;
     }
 
-    namespace LINE_THRESHOLD
-    {
-        constexpr int MIN = 50;
-        constexpr int MAX = 255;
-        constexpr int CANNY_LOW = 50;
-        constexpr int CANNY_HIGH = 150;
-    }
-
     namespace HISTORY
     {
         constexpr double TEMP_DURATION = 2.0;
     }
 
-    // --- CONTROL / PID ---
+    namespace LINE_CONTROL
+    {
+        inline const std::vector<double> DEFAULT_CENTERLINE(480, 320);
+        constexpr int STEPS_COUNT = 200;
+    }
+
     namespace PID
     {
         constexpr double KP = 0.5;
         constexpr double KI = 0.0;
         constexpr double KD = 0.1;
-    }
-
-    namespace LINE_CONTROL
-    {
-        const std::vector<double> DEFAULT_CENTERLINE(480, 320);
-        constexpr int STEPS_COUNT = 200;
     }
 
     namespace SPEED_GOVERNOR

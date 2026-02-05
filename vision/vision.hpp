@@ -25,6 +25,19 @@ private:
     const std::shared_ptr<ImageProcessor>& imageProcessor_;
 
     bool lineDetected_ = false;
+
+#ifdef __linux__
+    static bool getCameraPriority(const v4l2_capability& cap);
+    int autoDetectCameraIndex();
+
+    void linuxSetup();
+#elif WIN32
+    void windowsSetup();
+#else
+    void generalSetup();
+#endif
+
+    void cameraTest();
 };
 
 #endif //MILLER_VISION_HPP
