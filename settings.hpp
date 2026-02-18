@@ -21,6 +21,9 @@ namespace SETTINGS
         constexpr int CENTER_X = 320;
         constexpr int CENTER_Y = 480;
         constexpr float THETA = 0.f;
+
+        const cv::Point CENTER_BOTTOM = { CENTER_X, 0};
+        const cv::Point CENTER_TOP = { CENTER_X, 2*CENTER_Y};
     }
 
     // --- CONTROL / RUNTIME ---
@@ -32,8 +35,8 @@ namespace SETTINGS
             inline bool ENABLE_DRIVING = true;
             inline bool ENABLE_VISION = true;
             inline bool ENABLE_DISCORD = false;
-            inline bool ENABLE_LOGGING = false;
-            inline bool ENABLE_DEBUG = false;
+            inline bool ENABLE_LOGGING = true;
+            inline bool ENABLE_DEBUG = true;
             inline bool ENABLE_STEERING_COUNTER = false;
         }
 
@@ -120,19 +123,7 @@ namespace SETTINGS
     // --- VISION / CV ---
     namespace VISION
     {
-        constexpr bool AUTO_DETECT_CAMERA = true;
         constexpr int MAX_VIDEO_DEVICES = 40;
-
-        inline const std::unordered_map<std::string, int> CAMERA_PRIORITY = {
-            {"Raspberry Pi", 0},
-            {"B525 HD Webcam", 1},
-
-            {"Webcam", 10},
-            {"Logitech", 11},
-            {"Microsoft LifeCam", 12},
-            {"HP", 13},
-            {"Dell", 14}
-        };
 
 #ifdef __linux__
         constexpr int CAMERA_INDEX = 0;
@@ -147,8 +138,7 @@ namespace SETTINGS
 
         constexpr int MAX_TEST_ATTEMPTS = 10;
 
-        constexpr int GAUSSIAN_BLUR_KERNEL = 5;
-        constexpr double GAUSSIAN_SIGMA = 0.0;
+        constexpr float COLOR_THRESHOLD = 0.80f;
 
         constexpr int THRESHOLD_MIN = 100;
         constexpr int THRESHOLD_MAX = 255;
@@ -161,6 +151,13 @@ namespace SETTINGS
         constexpr int NUM = 24;
         constexpr float OFFSET_Y = 0.0f;
         constexpr float SPACING_Y = 15.0f;
+
+        // BGR not RGB (Blue, Green, Red)
+        inline cv::Scalar RENDER_QUADRANT{184, 169, 245};
+        inline cv::Scalar RENDER_POINT{250, 206, 91};
+        inline cv::Scalar RENDER_CENTERLINE{91, 206, 250};
+        inline cv::Scalar RENDER_LINE{0, 255, 0};
+        inline cv::Scalar RENDER_MOTOR_LINE{0, 0, 255};
     }
 
     namespace HISTORY
@@ -172,6 +169,8 @@ namespace SETTINGS
     {
         inline const std::vector<double> DEFAULT_CENTERLINE(480, 320);
         constexpr int STEPS_COUNT = 200;
+
+        constexpr double CURVATURE_GAIN = 1;
     }
 
     namespace PID

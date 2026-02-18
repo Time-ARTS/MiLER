@@ -18,8 +18,7 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         throw std::runtime_error("Could not open camera.");
     }
 
-    cv::Mat testFrame;
-    if (!cap_.read(testFrame) || testFrame.empty())
+    if (cv::Mat testFrame; !cap_.read(testFrame) || testFrame.empty())
     {
         throw std::runtime_error("Failed to grab a frame from the camera.");
     }
@@ -34,13 +33,6 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
 
         DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);
     }
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-    {
-        cv::imshow("Camera Test Frame", testFrame);
-        cv::waitKey(3000);
-        cv::destroyWindow("Camera Test Frame");
-    }
 }
 
 cv::Mat Vision::getCurrentFrame()
@@ -52,18 +44,19 @@ cv::Mat Vision::getCurrentFrame()
         throw std::runtime_error("Could not read frame from camera.");
 
     cv::cvtColor(currentFrame_, currentFrame_, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(currentFrame_, currentFrame_, cv::Size(5,5), 0);
 
-    cv::GaussianBlur(
-        currentFrame_, currentFrame_,
-        cv::Size(SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL, SETTINGS::VISION::GAUSSIAN_BLUR_KERNEL),
-        SETTINGS::VISION::GAUSSIAN_SIGMA);
+    constexpr int cutoff = static_cast<int>((1.0f - SETTINGS::VISION::COLOR_THRESHOLD) * 255.0f);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Frame grabbed succsessfully", MessageType::SUCCESS);
+    cv::threshold(currentFrame_, currentFrame_, cutoff, 255, cv::THRESH_BINARY_INV);
+
+    cv::morphologyEx(currentFrame_, currentFrame_, cv::MORPH_OPEN, cv::Mat(), cv::Point(-1,-1), 1);
+    cv::morphologyEx(currentFrame_, currentFrame_, cv::MORPH_CLOSE, cv::Mat(), cv::Point(-1,-1), 2);
+
     return currentFrame_;
 }
 
-bool Vision::detectedLine(cv::Mat* debugMask)
+bool Vision::detectedLine()
 {
     lineDetected_ = false;
 
@@ -72,13 +65,10 @@ bool Vision::detectedLine(cv::Mat* debugMask)
     const cv::Mat frame = getCurrentFrame();
     if (frame.empty()) return false;
 
-    cv::Mat mask;
-    cv::threshold(frame, mask, SETTINGS::VISION::THRESHOLD_MIN, SETTINGS::VISION::THRESHOLD_MAX, cv::THRESH_BINARY_INV);
+    cv::Mat mask = frame.clone();
 
-    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, {5,5}));
-    cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, {9,9}));
-
-    if (debugMask) *debugMask = mask.clone();
+    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, {5, 5}));
+    cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, {9, 9}));
 
     const cv::Moments m = cv::moments(mask, true);
     return m.m00 > SETTINGS::VISION::MIN_LINE_AREA;

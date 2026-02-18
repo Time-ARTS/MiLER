@@ -2,6 +2,7 @@
 #define MILLER_CONSTRUCTS_HPP
 
 #pragma once
+#include <chrono>
 #include <functional>
 #include <string>
 
@@ -29,12 +30,10 @@ struct Trigger {
     int key;
 };
 
-struct DriveCommand
+struct MotorCommandEntry
 {
-    double speed;
-    double correction;
-
-    [[nodiscard]] std::pair<double, double> motorCommand() const;
+    std::pair<double, double> speed;
+    std::chrono::steady_clock::time_point timestamp;
 };
 
 enum class MessageType

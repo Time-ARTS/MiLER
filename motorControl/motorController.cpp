@@ -49,11 +49,9 @@ void MotorController::turnOffMotors()
     pwmDrive(0, 0);
 }
 
-void MotorController::drive(const DriveCommand& cmd)
+void MotorController::drive(const double& left, const double& right)
 {
-    auto [left, right] = cmd.motorCommand();
-
-    commandHistory_.push_back({cmd, std::chrono::steady_clock::now()});
+    commandHistory_.push_back({{left, right}, std::chrono::steady_clock::now()});
 
     pwmDrive(left, right);
 
@@ -93,14 +91,14 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
 
     for (auto it = toBacktrack.begin(); it != toBacktrack.end(); ++it)
     {
-        auto [left, right] = it->cmd.motorCommand();
+        auto [left, right] = it->speed;
         pwmDrive(-left, -right);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
     }
 }
 
-void MotorController::pwmDrive(const float left, const float right)
+void MotorController::pwmDrive(const double left, const double right)
 {
 #ifdef __linux__
     const int pwmLeft = static_cast<int>(std::abs(left));

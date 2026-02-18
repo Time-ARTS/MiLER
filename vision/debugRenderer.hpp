@@ -11,8 +11,10 @@ class DebugRenderer
 public:
     static void openWindow();
     static void closeWindow();
-    static void renderSearchView(const cv::Mat& frame, const cv::Mat& mask);
-    static void render(cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points, const std::vector<double>& line, const DriveCommand& cmd);
+    static void render(const cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points, const std::vector<double>& line, const double& leftSpeed, const double& rightSpeed);
+
+private:
+    static void renderMotorLine(const cv::Mat& frame, float left, float right);
 };
 
 #endif //MILER_DEBUGRENDERER_HPP

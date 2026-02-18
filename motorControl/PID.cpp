@@ -12,10 +12,3 @@ float PID::compute(const float error)
 
     return kp_ * error + ki_ * integral_ + kd_ * derivative;
 }
-
-double PID::compute(const std::vector<double>& error)
-{
-    const int lookaheadY = std::min<int>(error.size()-1, 20);
-    const float errorY= error[lookaheadY] - SETTINGS::SCREEN::CENTER_X;
-    return compute(errorY);
-}

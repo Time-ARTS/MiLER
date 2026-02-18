@@ -11,8 +11,9 @@ class ControlExtractor
 {
 public:
     static std::vector<double> createLine(const std::vector<Vector2>& points);
+    static std::pair<double, double> createMotorLine(const std::vector<double>& estimatedLine);
 
-    private:
+private:
     static std::tuple<cv::Mat, cv::Mat> computeMatrix(const std::vector<Vector2>& points);
 };
 

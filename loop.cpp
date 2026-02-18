@@ -61,7 +61,10 @@ void Loop::run(const std::atomic<bool>& running)
 
         if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
         {
-            DiscordMessenger::sendMessageToDiscord(lineDetected_ ? "LineTest computed successfully, line detected. **CONTINUING**" : "LineTest computed successfully, line not found. **EXITING**"
+            DiscordMessenger::sendMessageToDiscord(
+                lineDetected_
+                    ? "LineTest computed successfully, line detected. **CONTINUING**"
+                    : "LineTest computed successfully, line not found. **EXITING**"
                 , lineDetected_ ? MessageType::SUCCESS : MessageType::WARNING);
         }
 
@@ -89,31 +92,40 @@ void Loop::loop() const
     const auto points = vision_->processFrame();
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Points processed successfully, continuing to line estimation", MessageType::SUCCESS);
+        DiscordMessenger::sendMessageToDiscord("Points processed successfully, continuing to line estimation",
+                                               MessageType::SUCCESS);
 
     const auto line = controlExtractor_->createLine(points);
+    auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorLine(line);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Line estimated successfully, continuing to correction and speed estimation", MessageType::SUCCESS);
+        DiscordMessenger::sendMessageToDiscord(
+            "Line estimated successfully, continuing to correction and speed estimation", MessageType::SUCCESS);
 
-    const auto lineCorrected = pid_->compute(line);
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Correction completed successfully, waiting for speed estimation", MessageType::SUCCESS);
-
-    const auto speed = speedGovernor_->compute(line);
+    leftMotorSpeed = pid_->compute(leftMotorSpeed);
+    rightMotorSpeed = pid_->compute(rightMotorSpeed);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Speed estimation completed successfully, sending drive commands to motors", MessageType::SUCCESS);
+        DiscordMessenger::sendMessageToDiscord("Correction completed successfully, waiting for speed estimation",
+                                               MessageType::SUCCESS);
 
-    const DriveCommand cmd{speed, lineCorrected};
-    motorController_->drive(cmd);
+    leftMotorSpeed = speedGovernor_->compute(leftMotorSpeed);
+    rightMotorSpeed = speedGovernor_->compute(rightMotorSpeed);
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        DiscordMessenger::sendMessageToDiscord(
+            "Speed estimation completed successfully, sending drive commands to motors", MessageType::SUCCESS);
+    DiscordMessenger::sendMessageToDiscord(
+        "Speed -> Left: " + std::to_string(leftMotorSpeed) + "   - Right: " + std::to_string(rightMotorSpeed),
+        MessageType::DEBUG);
+
+    motorController_->drive(leftMotorSpeed, rightMotorSpeed);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
     {
-        cv::Mat frame = vision_->getCurrentFrame();
+        const cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();
-        DebugRenderer::render(frame, quadrants, points, line, cmd);
+        DebugRenderer::render(frame, quadrants, points, line, leftMotorSpeed, rightMotorSpeed);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));

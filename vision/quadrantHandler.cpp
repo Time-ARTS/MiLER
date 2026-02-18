@@ -16,35 +16,30 @@ Vector2 Quadrant::self(const cv::Mat& frame) const
 
     const cv::Mat qFrame = frame(roi);
 
-    const int width = qFrame.cols;
-    const int height = qFrame.rows;
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
 
-    double weightedSumX = 0.0;
-    double weightedSumY = 0.0;
-    double totalWeight = 0.0;
+    cv::findContours(qFrame, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-    for (int y = 0; y < height; ++y)
-    {
-        const uchar* row = qFrame.ptr<uchar>(y);
-        for (int x = 0; x < width; ++x)
+    if (contours.empty()) return Vector2(-1, -1);
+
+    const auto largest = std::ranges::max_element(
+        contours, [](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b)
         {
-            const double weight = 255.0 - static_cast<double>(row[x]);
-            if (weight <= 0.0) continue;
-
-            weightedSumX += x * weight;
-            weightedSumY += y * weight;
-            totalWeight += weight;
+            return cv::contourArea(a) < cv::contourArea(b);
         }
-    }
+    );
 
-    if (totalWeight == 0.0) return Vector2(-1, -1);
+    const cv::Moments m = cv::moments(*largest);
+    if (m.m00 == 0) return Vector2(-1, -1);
 
-    const float xMid = static_cast<float>(weightedSumX / totalWeight);
-    const float yMid = static_cast<float>(weightedSumY / totalWeight);
+    const float cx = static_cast<float>(m.m10 / m.m00);
+    const float cy = static_cast<float>(m.m01 / m.m00);
 
-    // Offset by ROI position to get full-frame coordinates
-    return Vector2(roi.x + xMid, roi.y + yMid);
+    // Offset by ROI to get full-frame coordinates
+    return Vector2(roi.x + cx, roi.y + cy);
 }
+
 
 void ImageProcessor::quadrantize(const std::shared_ptr<Vision>& v)
 {

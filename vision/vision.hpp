@@ -16,7 +16,7 @@ public:
     explicit Vision(const std::shared_ptr<ImageProcessor>& imageProcessor);
     cv::Mat getCurrentFrame();
 
-    bool detectedLine(cv::Mat* debugMask);
+    bool detectedLine();
     std::vector<Vector2> processFrame() const { return imageProcessor_->processQuadrants(currentFrame_); }
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }

@@ -111,8 +111,7 @@ int main()
             {
                 if (const auto vision = loop.getVision())
                 {
-                    cv::Mat mask;
-                    lineDetected = vision->detectedLine(&mask);
+                    lineDetected = vision->detectedLine();
 
                     if (MODULE::ENABLE_DEBUG)
                     {
@@ -123,8 +122,6 @@ int main()
                                 DebugRenderer::openWindow();
                                 searchWindowOpen = true;
                             }
-
-                            DebugRenderer::renderSearchView(vision->getCurrentFrame(), mask);
                         }
                         else
                         {

@@ -5,23 +5,17 @@
 
 #include "../constructs.hpp"
 
-struct MotorCommandEntry
-{
-    DriveCommand cmd{};
-    std::chrono::steady_clock::time_point timestamp;
-};
-
 class MotorController
 {
 public:
     static bool selfTest();
     static void turnOffMotors();
-    void drive(const DriveCommand& cmd);
+    void drive(const double& left, const double& right);
 
     void backtrack(std::chrono::milliseconds duration);
 
 private:
-    static void pwmDrive(float left, float right);
+    static void pwmDrive(double left, double right);
 
     std::vector<MotorCommandEntry> commandHistory_;
     std::string motorCommandLog_;
