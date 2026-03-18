@@ -31,7 +31,7 @@ std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& poi
     return line;
 }
 
-std::pair<double, double> ControlExtractor::createMotorLine(const std::vector<double>& estimatedLine)
+std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<double>& estimatedLine)
 {
     if (estimatedLine.empty())
         return {SETTINGS::MOTOR::DEFAULT_SPEED, SETTINGS::MOTOR::DEFAULT_SPEED};

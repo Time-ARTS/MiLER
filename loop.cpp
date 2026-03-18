@@ -96,7 +96,7 @@ void Loop::loop() const
                                                MessageType::SUCCESS);
 
     const auto line = controlExtractor_->createLine(points);
-    auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorLine(line);
+    auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorVector(line);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
         DiscordMessenger::sendMessageToDiscord(
