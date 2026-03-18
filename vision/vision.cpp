@@ -18,9 +18,16 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         throw std::runtime_error("Could not open camera.");
     }
 
-    if (cv::Mat testFrame; !cap_.read(testFrame) || testFrame.empty())
+    cv::Mat testFrame;
+
+    if (!cap_.read(testFrame))
     {
         throw std::runtime_error("Failed to grab a frame from the camera.");
+    }
+
+    if (testFrame.empty())
+    {
+        throw std::runtime_error("Frame grabbed from camera is empty.");
     }
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
