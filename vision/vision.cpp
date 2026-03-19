@@ -11,6 +11,22 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
 {
     if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
 
+    camTest();
+    frameTest();
+
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    {
+        std::string cameraInfo = "Camera opened successfully: index "
+            + std::to_string(SETTINGS::VISION::CAMERA_INDEX);
+
+        const int backend = cap_.get(cv::CAP_PROP_BACKEND);
+        cameraInfo += " | backend: " + std::to_string(backend);
+
+        DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);}
+}
+
+void Vision::camTest()
+{
     cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
 
     if (!cap_.isOpened())
@@ -18,6 +34,14 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         throw std::runtime_error("Could not open camera.");
     }
 
+    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    {
+        std::cout << cv::getBuildInformation() << std::endl;
+    }
+}
+
+void Vision::frameTest()
+{
     cv::Mat testFrame;
 
     if (!cap_.read(testFrame))
@@ -28,17 +52,6 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
     if (testFrame.empty())
     {
         throw std::runtime_error("Frame grabbed from camera is empty.");
-    }
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-    {
-        std::string cameraInfo = "Camera opened successfully: index "
-            + std::to_string(SETTINGS::VISION::CAMERA_INDEX);
-
-        const int backend = cap_.get(cv::CAP_PROP_BACKEND);
-        cameraInfo += " | backend: " + std::to_string(backend);
-
-        DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);
     }
 }
 

@@ -5,6 +5,16 @@
 #include <chrono>
 #include <functional>
 #include <string>
+#include <iostream>
+
+#ifdef _WIN32
+#include <io.h>
+#define isatty _isatty
+#define STDIN_FILENO _fileno(stdin)
+#define STDOUT_FILENO _fileno(stdout)
+#else
+#include <unistd.h>
+#endif
 
 constexpr double PI = 3.141592653589793238463;
 
@@ -44,4 +54,14 @@ enum class MessageType
     DEBUG,
     SUCCESS
 };
+
+inline void waitForUserIfInteractive()
+{
+    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+    {
+        std::cerr << "\nPress ENTER to exit...";
+        std::cin.get();
+    }
+}
+
 #endif //MILLER_CONSTRUCTS_HPP

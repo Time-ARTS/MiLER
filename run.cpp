@@ -76,6 +76,11 @@ int main()
             std::this_thread::sleep_for(std::chrono::milliseconds(BUTTON::DEBOUNCE_MS));
         }, "Start");
 
+        keys->bind(BUTTON::KEY::ERROR_TEST, []
+        {
+            throw std::runtime_error("Error catch test");
+        });
+
         keys->bind(BUTTON::KEY::QUIT, []
         {
             DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
@@ -184,6 +189,9 @@ int main()
     {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         DiscordMessenger::sendMessageToDiscord(std::string("Fatal error: ") + e.what(), MessageType::ERROR);
+
+        waitForUserIfInteractive();
+
         std::exit(EXIT_FAILURE);
     }
 

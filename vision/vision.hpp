@@ -22,6 +22,8 @@ public:
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
 
 private:
+    void camTest();
+    void frameTest();
     const std::shared_ptr<ImageProcessor>& imageProcessor_;
 
     bool lineDetected_ = false;

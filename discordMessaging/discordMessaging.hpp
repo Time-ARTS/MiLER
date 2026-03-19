@@ -11,6 +11,8 @@ class DiscordMessenger
 public:
     static void init();
     static void shutdown();
+    static std::string truncate(const std::string& str, size_t maxLen);
+    static std::string escapeJson(const std::string& input);
     static void sendMessageToDiscord(const std::string& text, const MessageType& type = MessageType::INFO);
 };
 
