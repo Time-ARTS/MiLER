@@ -79,7 +79,7 @@ int main()
         keys->bind(BUTTON::KEY::ERROR_TEST, []
         {
             throw std::runtime_error("Error catch test");
-        });
+        }, "Error catch test");
 
         keys->bind(BUTTON::KEY::QUIT, []
         {

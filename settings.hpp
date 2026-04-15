@@ -128,7 +128,7 @@ namespace SETTINGS
 
 #ifdef __linux__
         constexpr int CAMERA_INDEX = 0;
-        constexpr auto CAMERA_SOURCE = cv::CAP_V4L2;
+        constexpr auto CAMERA_SOURCE = cv::CAP_ANY;
 #elif defined(_WIN32)
         constexpr int CAMERA_INDEX = 0;
         constexpr auto CAMERA_SOURCE = cv::CAP_DSHOW;
