@@ -36,40 +36,29 @@ std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<
     if (estimatedLine.empty())
         return {SETTINGS::MOTOR::DEFAULT_SPEED, SETTINGS::MOTOR::DEFAULT_SPEED};
 
-    // Compute error between estimated line and robot center
-    const double lookaheadY = std::min<int>(estimatedLine.size() - 1, 20);
+    // Robot origin in image space — bottom center
+    constexpr double originX = SETTINGS::SCREEN::CENTER_X;
+    constexpr double originY = 0; // bottom of image is closest to robot
 
-    const double lateralError = estimatedLine[lookaheadY] - SETTINGS::SCREEN::CENTER_X; // +ve -> need right curve, -ve -> left curve
+    // Lookahead point on the line
+    const int lookahead = std::min<int>(estimatedLine.size() - 1, 40);
+    const double targetX = estimatedLine[lookahead];
+    const double targetY = (double)lookahead; // Y = row index = distance forward
 
-    // Translate lateralError to differential drive speeds
-    // Use configurable parameters like wheelbase and speed factor
-    constexpr double curvatureGain = SETTINGS::LINE_CONTROL::CURVATURE_GAIN; // tunable
-    constexpr double speed = SETTINGS::MOTOR::DEFAULT_SPEED;
+    // Vector FROM robot origin TO lookahead point
+    const double vecX = targetX - originX; // lateral displacement
+    const double vecY = targetY - originY; // forward displacement
 
-    double leftSpeed, rightSpeed;
+    // Angle of that vector relative to straight ahead
+    // atan2(vecX, vecY): 0 = straight ahead, +ve = right, -ve = left
+    const double headingAngle = std::atan2(vecX, vecY);
 
-    // Motor speeds calculated so that the resulting curve moves laterally toward target
-    if (lateralError > 0)
-    {
-        // Curve right: slow left motor
-        leftSpeed  = speed;
-        rightSpeed = speed * std::max(0.0, 1.0 - curvatureGain * lateralError);
-    }
-    else if (lateralError < 0)
-    {
-        // Curve left: slow right motor
-        leftSpeed  = speed * std::max(0.0, 1.0 + curvatureGain * lateralError);
-        rightSpeed = speed;
-    }
-    else
-    {
-        leftSpeed  = speed;
-        rightSpeed = speed; // straight
-    }
+    // --- Decompose into (1,1)/(1,-1) basis ---
+    constexpr double A = SETTINGS::MOTOR::DEFAULT_SPEED;
+    const double B = headingAngle * SETTINGS::LINE_CONTROL::CURVATURE_GAIN;
 
-    // Clamp speeds to allowed range
-    leftSpeed  = std::clamp(leftSpeed, 0.0, speed);
-    rightSpeed = std::clamp(rightSpeed, 0.0, speed);
+    const double leftSpeed  = std::clamp(A + B, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    const double rightSpeed = std::clamp(A - B, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
 
     return {leftSpeed, rightSpeed};
 }

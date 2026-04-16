@@ -19,57 +19,61 @@ void DebugRenderer::closeWindow()
 void DebugRenderer::render(const cv::Mat& frame, const std::vector<Quadrant>& quadrants, const std::vector<Vector2>& points,
                            const std::vector<double>& line, const double& leftSpeed, const double& rightSpeed)
 {
-    cv::Mat botViewColored;
-    cv::cvtColor(frame, botViewColored, cv::COLOR_GRAY2BGR);
+    cv::Mat botView;
+    cv::cvtColor(frame, botView, cv::COLOR_GRAY2BGR);
 
     // Quadrants
     for (const auto& [roi] : quadrants)
-        cv::rectangle(botViewColored, roi, SETTINGS::QUADRANT::RENDER_QUADRANT, 1);
+        cv::rectangle(botView, roi, SETTINGS::QUADRANT::RENDER_QUADRANT, 1);
 
     // Detected points in each quadrant
     for (const auto& [x, y] : points)
-        cv::circle(botViewColored, cv::Point(x, y), 5, SETTINGS::QUADRANT::RENDER_POINT, -1);
+        cv::circle(botView, cv::Point(x, y), 5, SETTINGS::QUADRANT::RENDER_POINT, -1);
 
     // Draw centerline
-    cv::line(botViewColored, SETTINGS::SCREEN::CENTER_BOTTOM, SETTINGS::SCREEN::CENTER_TOP, SETTINGS::QUADRANT::RENDER_CENTERLINE, 2);
+    cv::line(botView, SETTINGS::SCREEN::CENTER_BOTTOM, SETTINGS::SCREEN::CENTER_TOP, SETTINGS::QUADRANT::RENDER_CENTERLINE, 2);
 
     // Draw the predictive line
     cv::Point prevPoint = { static_cast<int>(line[0]), 0 };
     for (int i = 1; i < line.size(); ++i)
     {
         const cv::Point currPoint = { static_cast<int>(line[i]), i };
-        cv::line(botViewColored, prevPoint, currPoint, SETTINGS::QUADRANT::RENDER_LINE, 2);
+        cv::line(botView, prevPoint, currPoint, SETTINGS::QUADRANT::RENDER_LINE, 2);
         prevPoint = currPoint;
     }
 
     // Draw motor-line
-    renderMotorLine(botViewColored, static_cast<float>(leftSpeed), static_cast<float>(rightSpeed));
+    renderMotorLine(botView, static_cast<float>(leftSpeed), static_cast<float>(rightSpeed));
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
         DiscordMessenger::sendMessageToDiscord("Window successfully rendered: MILLER DEBUG VIEW", MessageType::DEBUG);
 
-    cv::imshow("MILLER DEBUG VIEW", botViewColored);
+    cv::imshow("MILLER DEBUG VIEW", botView);
     cv::waitKey(1);
 }
 
 void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, const float right)
 {
     const float diff = right - left;          // turning direction
-    const float curveStrength = diff * 0.02f; // scale factor
+    const float avgSpeed = (left + right) / 2.0f;  // overall speed
 
-    cv::Point prev(SETTINGS::SCREEN::CENTER_X, frame.rows - 1);
+    const cv::Point center = SETTINGS::SCREEN::CENTER_BOTTOM;
+    constexpr float circleRadius = SETTINGS::QUADRANT::CIRCLE_RADIUS;
+    const auto circleColor = SETTINGS::QUADRANT::RENDER_MOTOR_LINE;
 
-    for (int i = 1; i < frame.rows; ++i)
-    {
-        const float t = i / 120.0f;
-        const float bend = curveStrength * t * t;
+    // Draw base circle
+    cv::circle(frame, center, circleRadius, circleColor, 2);
 
-        const int x = static_cast<int>(SETTINGS::SCREEN::CENTER_X + bend * 300.0f);
-        const int y = frame.rows - 1 - i * 2;
+    // Map diff [-1, 1] -> angle [-90, 90] degrees, offset by 90 so 0 = straight up
+    // diff=0 -> 90deg (up), diff=1 -> 0deg (right), diff=-1 -> 180deg (left)
+    const float angleDeg = 90.0f - (diff * 90.0f);
+    const float angleRad = angleDeg * CV_PI / 180.0f;
 
-        cv::Point curr(x, y);
-        cv::line(frame, prev, curr, SETTINGS::QUADRANT::RENDER_MOTOR_LINE, 2);
-        prev = curr;
-    }
+    const cv::Point lineEnd = {
+        center.x + static_cast<int>(circleRadius * std::cos(angleRad)),
+        center.y - static_cast<int>(circleRadius * std::sin(angleRad))  // y flipped in image space
+    };
 
+    // Direction line
+    cv::line(frame, center, lineEnd, SETTINGS::QUADRANT::RENDER_MOTOR_LINE, 2);
 }

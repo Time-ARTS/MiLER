@@ -121,7 +121,7 @@ void Loop::loop() const
 
     motorController_->drive(leftMotorSpeed, rightMotorSpeed);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (SETTINGS::CONTROL::MODULE::ENABLE_MIRRORING)
     {
         const cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();

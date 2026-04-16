@@ -20,10 +20,10 @@ namespace SETTINGS
     {
         constexpr int CENTER_X = 320;
         constexpr int CENTER_Y = 480;
-        constexpr float THETA = 0.f;
+        constexpr float THETA = 0.0f;
 
-        const cv::Point CENTER_BOTTOM = { CENTER_X, 0};
-        const cv::Point CENTER_TOP = { CENTER_X, 2*CENTER_Y};
+        const cv::Point CENTER_TOP = { CENTER_X, 0};
+        const cv::Point CENTER_BOTTOM = { CENTER_X, CENTER_Y};
     }
 
     // --- CONTROL / RUNTIME ---
@@ -34,9 +34,10 @@ namespace SETTINGS
         {
             inline bool ENABLE_DRIVING = true;
             inline bool ENABLE_VISION = true;
-            inline bool ENABLE_DISCORD = true;
+            inline bool ENABLE_DISCORD = false;
             inline bool ENABLE_LOGGING = true;
-            inline bool ENABLE_DEBUG = true;
+            inline bool ENABLE_DEBUG = false;
+            inline bool ENABLE_MIRRORING = true;
             inline bool ENABLE_STEERING_COUNTER = false;
         }
 
@@ -84,7 +85,8 @@ namespace SETTINGS
                     constexpr char DISCORD = '2';
                     constexpr char LOGGING = '3';
                     constexpr char DEBUG = '4';
-                    constexpr char STEERING_COUNTER = '5';
+                    constexpr char MIRRORING = '5';
+                    constexpr char STEERING_COUNTER = '6';
 
                     static ToggleBinding TOGGLE_TABLE[] = {
                         {DRIVING, &MODULE::ENABLE_DRIVING, "Toggle Driving"},
@@ -92,6 +94,7 @@ namespace SETTINGS
                         {DISCORD, &MODULE::ENABLE_DISCORD, "Toggle Discord"},
                         {LOGGING, &MODULE::ENABLE_LOGGING, "Toggle Logging"},
                         {DEBUG, &MODULE::ENABLE_DEBUG, "Toggle Debug View"},
+                        {MIRRORING, &MODULE::ENABLE_MIRRORING, "Toggle Camera Mirroring"},
                         {STEERING_COUNTER, &MODULE::ENABLE_STEERING_COUNTER, "Toggle Steering Counter"}
                     };
                 }
@@ -102,9 +105,9 @@ namespace SETTINGS
     // --- GPIO / HARDWARE ---
     namespace MOTOR
     {
-        constexpr double MAX_SPEED = 255.0f;
-        constexpr double MIN_SPEED = -255.0f;
-        constexpr int DEFAULT_SPEED = 255;
+        constexpr double MAX_SPEED = 1.0f;
+        constexpr double MIN_SPEED = -1.0f;
+        constexpr double DEFAULT_SPEED = 1.0f;
         constexpr int STEERING_COUNT = 50;
 
         namespace PIN
@@ -127,8 +130,12 @@ namespace SETTINGS
         constexpr int MAX_VIDEO_DEVICES = 40;
 
 #ifdef __linux__
-        constexpr int CAMERA_INDEX = 0;
-        constexpr auto CAMERA_SOURCE = cv::CAP_ANY;
+        constexpr auto CAMERA_INDEX = "libcamerasrc ! "
+        "video/x-raw,width=640,height=480,framerate=30/1 ! "
+        "videoconvert ! "
+        "appsink";
+
+        constexpr auto CAMERA_SOURCE = cv::CAP_GSTREAMER;
 #elif defined(_WIN32)
         constexpr int CAMERA_INDEX = 0;
         constexpr auto CAMERA_SOURCE = cv::CAP_DSHOW;
@@ -152,6 +159,8 @@ namespace SETTINGS
         constexpr int NUM = 24;
         constexpr float OFFSET_Y = 0.0f;
         constexpr float SPACING_Y = 15.0f;
+
+        constexpr float CIRCLE_RADIUS = 50.0f;
 
         // BGR not RGB (Blue, Green, Red)
         inline cv::Scalar RENDER_QUADRANT{184, 169, 245};

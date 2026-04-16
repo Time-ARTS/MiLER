@@ -101,6 +101,9 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
 void MotorController::pwmDrive(const double left, const double right)
 {
 #ifdef __linux__
+    left *= 255;
+    right *= 255;
+
     const int pwmLeft = static_cast<int>(std::abs(left));
     const int pwmRight = static_cast<int>(std::abs(right));
 
