@@ -18,7 +18,8 @@ class Vision:
     """
 
     def __init__(self):
-        self._frame = None
+        self._frame = None          # binary (processed) frame
+        self._raw_frame = None      # original colour frame (BGR)
         self._cap = None
         self._picam = None
 
@@ -57,8 +58,10 @@ class Vision:
         """
         Returns a binary (thresholded) frame where white pixels are the
         black line and black pixels are the background.
+        Also stores the raw colour frame in self._raw_frame.
         """
         raw = self._grab_raw_frame()
+        self._raw_frame = raw.copy()   # save colour copy for the debug renderer
         return self._process(raw)
 
     def detected_line(self) -> bool:
@@ -110,3 +113,8 @@ class Vision:
     def last_frame(self) -> np.ndarray | None:
         """The most recently processed (binary) frame."""
         return self._frame
+
+    @property
+    def last_raw_frame(self) -> np.ndarray | None:
+        """The most recently captured raw colour frame (BGR)."""
+        return self._raw_frame
