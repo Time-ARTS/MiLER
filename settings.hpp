@@ -130,18 +130,19 @@ namespace SETTINGS
         constexpr int MAX_VIDEO_DEVICES = 40;
 
 #ifdef __linux__
-        constexpr auto CAMERA_INDEX = "libcamerasrc ! "
-        "video/x-raw,width=640,height=480,framerate=30/1 ! "
+        inline std::string CAMERA_INDEX = "libcamerasrc ! "
+        "video/x-raw,format=NV12,width=640,height=480,framerate=30/1 ! "
         "videoconvert ! "
+        "video/x-raw,format=BGR ! "
         "appsink";
 
-        constexpr auto CAMERA_SOURCE = cv::CAP_GSTREAMER;
+        inline auto CAMERA_SOURCE = cv::CAP_GSTREAMER;
 #elif defined(_WIN32)
-        constexpr int CAMERA_INDEX = 0;
-        constexpr auto CAMERA_SOURCE = cv::CAP_DSHOW;
+        inline int CAMERA_INDEX = 0;
+        inline auto CAMERA_SOURCE = cv::CAP_DSHOW;
 #else
-        constexpr int CAMERA_INDEX = 0;
-        constexpr auto CAMERA_SOURCE = cv::CAP_ANY;
+        inline int CAMERA_INDEX = 0;
+        inline auto CAMERA_SOURCE = cv::CAP_ANY;
 #endif
 
         constexpr int MAX_TEST_ATTEMPTS = 10;

@@ -102,24 +102,19 @@ void Loop::loop() const
         DiscordMessenger::sendMessageToDiscord(
             "Line estimated successfully, continuing to correction and speed estimation", MessageType::SUCCESS);
 
-    leftMotorSpeed = pid_->compute(leftMotorSpeed);
-    rightMotorSpeed = pid_->compute(rightMotorSpeed);
+    //leftMotorSpeed = pid_->compute(leftMotorSpeed);
+    //rightMotorSpeed = pid_->compute(rightMotorSpeed);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
         DiscordMessenger::sendMessageToDiscord("Correction completed successfully, waiting for speed estimation",
                                                MessageType::SUCCESS);
 
-    leftMotorSpeed = speedGovernor_->compute(leftMotorSpeed);
-    rightMotorSpeed = speedGovernor_->compute(rightMotorSpeed);
+    //leftMotorSpeed = speedGovernor_->compute(leftMotorSpeed);
+    //rightMotorSpeed = speedGovernor_->compute(rightMotorSpeed);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
         DiscordMessenger::sendMessageToDiscord(
             "Speed estimation completed successfully, sending drive commands to motors", MessageType::SUCCESS);
-    DiscordMessenger::sendMessageToDiscord(
-        "Speed -> Left: " + std::to_string(leftMotorSpeed) + "   - Right: " + std::to_string(rightMotorSpeed),
-        MessageType::DEBUG);
-
-    motorController_->drive(leftMotorSpeed, rightMotorSpeed);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_MIRRORING)
     {
@@ -127,6 +122,15 @@ void Loop::loop() const
         const auto quadrants = imageProcessor_->getQuadrants();
         DebugRenderer::render(frame, quadrants, points, line, leftMotorSpeed, rightMotorSpeed);
     }
+
+    leftMotorSpeed *= 255;
+    rightMotorSpeed *= 255;
+
+    motorController_->drive(leftMotorSpeed, rightMotorSpeed);
+
+    DiscordMessenger::sendMessageToDiscord(
+        "Speed -> Left: " + std::to_string(leftMotorSpeed) + "   - Right: " + std::to_string(rightMotorSpeed),
+        MessageType::DEBUG);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
 }

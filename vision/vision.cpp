@@ -11,6 +11,8 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
 {
     if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
 
+    cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
+
     camTest();
     frameTest();
 
@@ -25,10 +27,8 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
         DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);}
 }
 
-void Vision::camTest()
+void Vision::camTest() const
 {
-    cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
-
     if (!cap_.isOpened())
     {
         throw std::runtime_error("Could not open camera.");
