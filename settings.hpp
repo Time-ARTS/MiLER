@@ -137,12 +137,15 @@ namespace SETTINGS
             "video/x-raw,format=BGR ! "
             "appsink";
 
+        inline std::string CAMERA_INFO = CAMERA_INDEX;
         inline auto CAMERA_SOURCE = cv::CAP_GSTREAMER;
 #elif defined(_WIN32)
         inline int CAMERA_INDEX = 0;
+        inline std::string CAMERA_INFO = std::to_string(CAMERA_INDEX);
         inline auto CAMERA_SOURCE = cv::CAP_DSHOW;
 #else
         inline int CAMERA_INDEX = 0;
+        inline std::string CAMERA_INFO = std::to_string(CAMERA_INDEX);
         inline auto CAMERA_SOURCE = cv::CAP_ANY;
 #endif
 

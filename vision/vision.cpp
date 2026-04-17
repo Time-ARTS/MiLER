@@ -18,8 +18,7 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
     {
-        std::string cameraInfo = "Camera opened successfully: index "
-            + std::to_string(SETTINGS::VISION::CAMERA_INDEX);
+        std::string cameraInfo = "Camera opened successfully: index " + SETTINGS::VISION::CAMERA_INFO;
 
         const int backend = cap_.get(cv::CAP_PROP_BACKEND);
         cameraInfo += " | backend: " + std::to_string(backend);
