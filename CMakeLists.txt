@@ -48,9 +48,7 @@ include_directories(
 )
 
 # ---- Source Files (common) ----
-set(SOURCES
-        loop.cpp
-        run.cpp
+set(COMMON_SOURCES
         shortKeyCommands/shortKeyCommands.cpp
         vision/vision.cpp
         vision/debugRenderer.cpp
@@ -60,6 +58,7 @@ set(SOURCES
         motorControl/motorController.cpp
         motorControl/speedGovernor.cpp
         discordMessaging/discordMessaging.cpp
+        discordMessaging/networkInfo.cpp
 )
 
 set(HEADERS
@@ -75,10 +74,21 @@ set(HEADERS
         motorControl/motorController.hpp
         motorControl/speedGovernor.hpp
         discordMessaging/discordMessaging.hpp
-        constructs.cpp
+        discordMessaging/networkInfo.hpp
 )
 
-add_executable(MiLER ${SOURCES} ${HEADERS})
+add_executable(MiLER
+        loop.cpp
+        run.cpp
+        ${COMMON_SOURCES}
+        ${HEADERS}
+)
+
+add_executable(networkBootIP
+        discordMessaging/networkBootIP.cpp
+        discordMessaging/networkInfo.cpp
+        discordMessaging/discordMessaging.cpp
+)
 
 # ---- Windows: ensure OpenCV DLLs are found at runtime ----
 if (WIN32)
@@ -92,6 +102,10 @@ endif ()
 # ---- Link Libraries ----
 target_link_libraries(MiLER
         ${OpenCV_LIBS}
+        ${CURL_TARGET}
+)
+
+target_link_libraries(networkBootIP
         ${CURL_TARGET}
 )
 

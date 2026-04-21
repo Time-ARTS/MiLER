@@ -112,15 +112,15 @@ namespace SETTINGS
 
         namespace PIN
         {
-            constexpr int EN_LEFT = 22;
-            constexpr int IN1_LEFT = 17;
-            constexpr int IN2_LEFT = 27;
+            constexpr int EN_LEFT = 22;  // PWMA
+            constexpr int IN1_LEFT = 17; // AI1
+            constexpr int IN2_LEFT = 27; // AI2
 
-            constexpr int EN_RIGHT = 25;
-            constexpr int IN1_RIGHT = 23;
-            constexpr int IN2_RIGHT = 24;
+            constexpr int EN_RIGHT = 25;  // PWMB
+            constexpr int IN1_RIGHT = 23; // BI1
+            constexpr int IN2_RIGHT = 24; // BI2
 
-            constexpr int STANDBY = 26;
+            constexpr int STANDBY = 26; // STBY
         }
     }
 
