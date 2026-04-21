@@ -32,7 +32,7 @@ void DiscordMessenger::shutdown()
 #endif
 }
 
-void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type)
+void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type, const bool& passThrough)
 {
     static const std::unordered_map<MessageType, std::string> typeToString = {
         {MessageType::INFO, "INFO"},
@@ -42,7 +42,7 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
         {MessageType::SUCCESS, "SUCCESS"}
     };
 
-    if (!SETTINGS::CONTROL::MODULE::ENABLE_DISCORD)
+    if (!(SETTINGS::CONTROL::MODULE::ENABLE_DISCORD || passThrough))
     {
         if (!SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) return;
 

@@ -79,27 +79,31 @@ namespace NetworkInfo
         {
             DiscordMessenger::sendMessageToDiscord(
                 "Startup: wlan IP not found",
-                MessageType::WARNING
+                MessageType::WARNING,
+                true
             );
         }
         else if (ip.rfind("ERROR", 0) == 0)
         {
             DiscordMessenger::sendMessageToDiscord(
                 ip,
-                MessageType::ERROR
+                MessageType::ERROR,
+                true
             );
         }
         else
         {
             DiscordMessenger::sendMessageToDiscord(
                 "System online | IP: " + ip + "\nSSH: pi@" + ip,
-                MessageType::SUCCESS
+                MessageType::SUCCESS,
+                true
             );
         }
 #else
         DiscordMessenger::sendMessageToDiscord(
             "System online | Network info unsupported on this platform",
-            MessageType::WARNING
+            MessageType::WARNING,
+            true
         );
 #endif
     }
