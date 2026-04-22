@@ -47,6 +47,19 @@ bool MotorController::selfTest()
 void MotorController::turnOffMotors()
 {
     pwmDrive(0, 0);
+
+    #ifdef __linux__
+    digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, LOW);
+    #endif
+}
+
+void MotorController::turnOnMotors()
+{
+    pwmDrive(0, 0);
+
+#ifdef __linux__
+    digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
+#endif
 }
 
 void MotorController::drive(const double& left, const double& right)
@@ -105,12 +118,12 @@ void MotorController::pwmDrive(const double left, const double right)
     const int pwmRight = static_cast<int>(std::abs(right));
 
     // LEFT motor direction
-    digitalWrite(SETTINGS::MOTOR::PIN::IN1_LEFT, left >= 0 ? HIGH : LOW);
-    digitalWrite(SETTINGS::MOTOR::PIN::IN2_LEFT, left >= 0 ? LOW : HIGH);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN1_LEFT, left >= 0 ? LOW : HIGH);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN2_LEFT, left >= 0 ? HIGH : LOW);
 
     // RIGHT motor direction
-    digitalWrite(SETTINGS::MOTOR::PIN::IN1_RIGHT, right >= 0 ? HIGH : LOW);
-    digitalWrite(SETTINGS::MOTOR::PIN::IN2_RIGHT, right >= 0 ? LOW : HIGH);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN1_RIGHT, right >= 0 ? LOW : HIGH);
+    digitalWrite(SETTINGS::MOTOR::PIN::IN2_RIGHT, right >= 0 ? HIGH : LOW);
 
     // Speed
     softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT, pwmLeft);

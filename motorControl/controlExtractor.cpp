@@ -1,7 +1,15 @@
 #include "controlExtractor.hpp"
 #include "settings.hpp"
+#include "PID.hpp"
 
 #include <vector>
+#include <numeric>
+#include <ranges>
+#include <cmath>
+
+ControlExtractor::ControlExtractor(const std::shared_ptr<PID>& pid) : pid_(pid)
+{
+}
 
 std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& points)
 {
@@ -31,36 +39,59 @@ std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& poi
     return line;
 }
 
-std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<double>& estimatedLine)
+std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<double>& estimatedLine) const
 {
     if (estimatedLine.empty())
         return {SETTINGS::MOTOR::DEFAULT_SPEED, SETTINGS::MOTOR::DEFAULT_SPEED};
 
-    // Robot origin in image space — bottom center
-    constexpr double originX = SETTINGS::SCREEN::CENTER_X;
-    constexpr double originY = 0; // bottom of image is closest to robot
+    const auto H = static_cast<int>(estimatedLine.size());
+    constexpr double centerX = SETTINGS::SCREEN::CENTER_X;
 
-    // Lookahead point on the line
-    const int lookahead = std::min<int>(estimatedLine.size() - 1, 40);
-    const double targetX = estimatedLine[lookahead];
-    const double targetY = (double)lookahead; // Y = row index = distance forward
+    constexpr double y0    = SETTINGS::LINE_CONTROL::WEIGHT_CENTER;
+    constexpr double sigma = SETTINGS::LINE_CONTROL::WEIGHT_SIGMA;
 
-    // Vector FROM robot origin TO lookahead point
-    const double vecX = targetX - originX; // lateral displacement
-    const double vecY = targetY - originY; // forward displacement
+    // Create index view [0, H)
+    auto indices = std::views::iota(0, H);
 
-    // Angle of that vector relative to straight ahead
-    // atan2(vecX, vecY): 0 = straight ahead, +ve = right, -ve = left
-    const double headingAngle = std::atan2(vecX, vecY);
+    // Accumulate weighted sum using transform_reduce
+    const auto [num, den] = std::transform_reduce(
+        indices.begin(), indices.end(),
+        std::pair{0.0, 0.0},
+        [](auto a, auto b) {
+            return std::pair{a.first + b.first, a.second + b.second};
+        },
+        [&](const int y) {
+            const double y_prime = (H - 1) - y;
+            const double w = std::exp(-std::pow(y_prime - y0, 2) / (2 * sigma * sigma));
+            return std::pair{w * estimatedLine[y], w};
+        }
+    );
 
-    // --- Decompose into (1,1)/(1,-1) basis ---
-    constexpr double A = SETTINGS::MOTOR::DEFAULT_SPEED;
-    const double B = headingAngle * SETTINGS::LINE_CONTROL::CURVATURE_GAIN;
+    const double x_star = num / den;
 
-    const double leftSpeed  = std::clamp(A + B, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
-    const double rightSpeed = std::clamp(A - B, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    // --- Local slope (central difference) ---
+    const int y_center = std::clamp<int>(H - 1 - static_cast<int>(y0), 1, H - 2);
 
-    return {leftSpeed, rightSpeed};
+    const double slope =
+        (estimatedLine[y_center + 1] - estimatedLine[y_center - 1]) / 2.0;
+
+    // --- Error model ---
+    const double offset = x_star - centerX;
+
+    const double error =
+        offset * SETTINGS::LINE_CONTROL::OFFSET_GAIN +
+        slope  * SETTINGS::LINE_CONTROL::ANGLE_GAIN;
+
+    // --- Motor output ---
+    constexpr double base = SETTINGS::MOTOR::DEFAULT_SPEED;
+    constexpr double dt = SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS / 1000.0f;
+
+    const double control = pid_->update(error, dt);
+
+    const double left  = std::clamp(base + control, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    const double right = std::clamp(base - control, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+
+    return {left, right};
 }
 
 std::tuple<cv::Mat, cv::Mat> ControlExtractor::computeMatrix(const std::vector<Vector2>& points)

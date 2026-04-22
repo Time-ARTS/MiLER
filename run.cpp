@@ -53,8 +53,6 @@ int main()
         if (softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255) != 0)
             DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_RIGHT", MessageType::ERROR);
 
-        digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
-
         loop.motorTest();
 #endif
 
@@ -79,6 +77,8 @@ int main()
         keys->bind(BUTTON::KEY::ERROR_TEST, []
         {
             throw std::runtime_error("Error catch test");
+            MotorController::turnOffMotors();
+
         }, "Error catch test");
 
         keys->bind(BUTTON::KEY::QUIT, []
@@ -145,6 +145,7 @@ int main()
                 lastActivity = std::chrono::steady_clock::now();
 
                 DiscordMessenger::sendMessageToDiscord("Line detected. Starting loop...", MessageType::SUCCESS);
+                MotorController::turnOnMotors();
                 loop.run(running);
             }
             else

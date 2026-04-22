@@ -105,9 +105,9 @@ namespace SETTINGS
     // --- GPIO / HARDWARE ---
     namespace MOTOR
     {
-        constexpr double MAX_SPEED = 1.0f;
-        constexpr double MIN_SPEED = -1.0f;
-        constexpr double DEFAULT_SPEED = 1.0f;
+        constexpr double MAX_SPEED = 255.0f;
+        constexpr double MIN_SPEED = -255.0f;
+        constexpr double DEFAULT_SPEED = 50.0f;
         constexpr int STEERING_COUNT = 50;
 
         namespace PIN
@@ -151,7 +151,7 @@ namespace SETTINGS
 
         constexpr int MAX_TEST_ATTEMPTS = 10;
 
-        constexpr float COLOR_THRESHOLD = 0.80f;
+        constexpr float COLOR_THRESHOLD = 0.70f;
 
         constexpr int THRESHOLD_MIN = 100;
         constexpr int THRESHOLD_MAX = 255;
@@ -185,14 +185,22 @@ namespace SETTINGS
         inline const std::vector<double> DEFAULT_CENTERLINE(480, 320);
         constexpr int STEPS_COUNT = 200;
 
+        constexpr double WEIGHT_CENTER = 50.0;
+        constexpr double WEIGHT_SIGMA = 35.0;
+
+        constexpr double OFFSET_GAIN = 0.010;
+        constexpr double ANGLE_GAIN = 0.25;
+
         constexpr double CURVATURE_GAIN = 1;
     }
 
     namespace PID
     {
-        constexpr double KP = 0.5;
-        constexpr double KI = 0.0;
-        constexpr double KD = 0.1;
+        constexpr double KP = 0.012;
+        constexpr double KI = 0.0003;
+        constexpr double KD = 0.006;
+
+        constexpr double INT_LIMIT = 50.0;
     }
 
     namespace SPEED_GOVERNOR

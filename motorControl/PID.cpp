@@ -1,14 +1,15 @@
 #include "PID.hpp"
 #include "settings.hpp"
 
-#include <vector>
-
-float PID::compute(const float error)
+double PID::update(const double error, const double dt)
 {
-    constexpr auto dt = SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS / 1000.0f;
     integral_ += error * dt;
-    const float derivative = (error - prevError_) / dt;
+    integral_ = std::clamp(integral_,-SETTINGS::PID::INT_LIMIT, SETTINGS::PID::INT_LIMIT);
+
+    const double derivative = (error - prevError_) / dt;
     prevError_ = error;
 
-    return kp_ * error + ki_ * integral_ + kd_ * derivative;
+    return SETTINGS::PID::KP * error +
+           SETTINGS::PID::KI * integral_ +
+           SETTINGS::PID::KD * derivative;
 }

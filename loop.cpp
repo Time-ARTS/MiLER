@@ -7,7 +7,6 @@
 #include "motorControl/controlExtractor.hpp"
 #include "motorControl/motorController.hpp"
 #include "motorControl/PID.hpp"
-#include "motorControl/speedGovernor.hpp"
 
 #include <chrono>
 #include <thread>
@@ -16,11 +15,10 @@
 #include "vision/debugRenderer.hpp"
 
 Loop::Loop()
-    : controlExtractor_(std::make_shared<ControlExtractor>())
+    : pid_(std::make_shared<PID>())
+      , controlExtractor_(std::make_shared<ControlExtractor>(pid_))
       , imageProcessor_(std::make_shared<ImageProcessor>())
       , motorController_(std::make_shared<MotorController>())
-      , pid_(std::make_shared<PID>(SETTINGS::PID::KD, SETTINGS::PID::KI, SETTINGS::PID::KP))
-      , speedGovernor_(std::make_shared<SpeedGovernor>())
       , vision_(std::make_shared<Vision>(imageProcessor_))
       , shortKeyCommands_(std::make_shared<shortKeyCommands>())
       , lineDetected_(true)
@@ -31,7 +29,6 @@ Loop::Loop()
     if (!imageProcessor_) failed.emplace_back("ImageProcessor");
     if (!motorController_) failed.emplace_back("MotorController");
     if (!pid_) failed.emplace_back("PID");
-    if (!speedGovernor_) failed.emplace_back("SpeedGovernor");
     if (!vision_) failed.emplace_back("Vision");
     if (!shortKeyCommands_) failed.emplace_back("ShortKeyCommands");
 
@@ -71,7 +68,7 @@ void Loop::run(const std::atomic<bool>& running)
         if (!lineDetected_ || !running)
         {
             DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
-            motorController_->turnOffMotors();
+            MotorController::turnOffMotors();
             break;
         }
 
@@ -92,29 +89,13 @@ void Loop::loop() const
     const auto points = vision_->processFrame();
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Points processed successfully, continuing to line estimation",
-                                               MessageType::SUCCESS);
+        DiscordMessenger::sendMessageToDiscord("Points processed, continuing...", MessageType::SUCCESS);
 
     const auto line = controlExtractor_->createLine(points);
     auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorVector(line);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord(
-            "Line estimated successfully, continuing to correction and speed estimation", MessageType::SUCCESS);
-
-    //leftMotorSpeed = pid_->compute(leftMotorSpeed);
-    //rightMotorSpeed = pid_->compute(rightMotorSpeed);
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord("Correction completed successfully, waiting for speed estimation",
-                                               MessageType::SUCCESS);
-
-    //leftMotorSpeed = speedGovernor_->compute(leftMotorSpeed);
-    //rightMotorSpeed = speedGovernor_->compute(rightMotorSpeed);
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
-        DiscordMessenger::sendMessageToDiscord(
-            "Speed estimation completed successfully, sending drive commands to motors", MessageType::SUCCESS);
+        DiscordMessenger::sendMessageToDiscord("Motor-controlls accuired, continuing...", MessageType::SUCCESS);
 
     if (SETTINGS::CONTROL::MODULE::ENABLE_MIRRORING)
     {
@@ -122,9 +103,6 @@ void Loop::loop() const
         const auto quadrants = imageProcessor_->getQuadrants();
         DebugRenderer::render(frame, quadrants, points, line, leftMotorSpeed, rightMotorSpeed);
     }
-
-    leftMotorSpeed *= 255;
-    rightMotorSpeed *= 255;
 
     motorController_->drive(leftMotorSpeed, rightMotorSpeed);
 

@@ -10,6 +10,7 @@ class MotorController
 public:
     static bool selfTest();
     static void turnOffMotors();
+    static void turnOnMotors();
     void drive(const double& left, const double& right);
 
     void backtrack(std::chrono::milliseconds duration);

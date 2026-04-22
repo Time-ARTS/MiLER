@@ -56,7 +56,6 @@ set(COMMON_SOURCES
         motorControl/PID.cpp
         motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
-        motorControl/speedGovernor.cpp
         discordMessaging/discordMessaging.cpp
         discordMessaging/networkInfo.cpp
 )
@@ -72,7 +71,6 @@ set(HEADERS
         motorControl/PID.hpp
         motorControl/controlExtractor.hpp
         motorControl/motorController.hpp
-        motorControl/speedGovernor.hpp
         discordMessaging/discordMessaging.hpp
         discordMessaging/networkInfo.hpp
 )
