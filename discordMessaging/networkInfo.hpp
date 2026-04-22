@@ -6,7 +6,13 @@
 
 namespace NetworkInfo
 {
-    std::string getWlanIP();
+    struct IPResult
+    {
+        enum Status { OK, NO_INTERFACE, NO_IP, ERROR };
+
+        Status status;
+        std::string ip;
+    };
 
     void sendStartupNetworkInfo();
 }
