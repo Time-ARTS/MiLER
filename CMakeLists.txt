@@ -57,7 +57,6 @@ set(COMMON_SOURCES
         motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
         discordMessaging/discordMessaging.cpp
-        discordMessaging/networkInfo.cpp
 )
 
 set(HEADERS
@@ -72,7 +71,6 @@ set(HEADERS
         motorControl/controlExtractor.hpp
         motorControl/motorController.hpp
         discordMessaging/discordMessaging.hpp
-        discordMessaging/networkInfo.hpp
 )
 
 add_executable(MiLER

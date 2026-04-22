@@ -16,6 +16,10 @@ bool MotorController::selfTest()
 
     try
     {
+        DiscordMessenger::sendMessageToDiscord("Turning on motors", MessageType::INFO);
+        turnOnMotors();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
         DiscordMessenger::sendMessageToDiscord("Motor Left driving: 120", MessageType::INFO);
         pwmDrive(120, 0);   // Left forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -34,6 +38,10 @@ bool MotorController::selfTest()
 
         pwmDrive(0, 0); // Stop
 
+        DiscordMessenger::sendMessageToDiscord("Truning motors off", MessageType::SUCCESS);
+        turnOffMotors();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         DiscordMessenger::sendMessageToDiscord("Motor self-test passed", MessageType::SUCCESS);
         return true;
     }
@@ -55,11 +63,11 @@ void MotorController::turnOffMotors()
 
 void MotorController::turnOnMotors()
 {
-    pwmDrive(0, 0);
-
 #ifdef __linux__
     digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
 #endif
+
+    pwmDrive(0, 0);
 }
 
 void MotorController::drive(const double& left, const double& right)
