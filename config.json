@@ -1,0 +1,67 @@
+{
+  "modules": {
+    "driving": true,
+    "vision": true,
+    "discord": false,
+    "logging": true,
+    "debug": false,
+    "mirroring": true,
+    "steering_counter": false
+  },
+
+  "motor": {
+    "default_speed": 45.0,
+    "min_speed": -100.0,
+    "max_speed": 100.0,
+    "steering_count": 50
+  },
+
+  "pid": {
+    "kp": 0.5,
+    "ki": 0.02,
+    "kd": 0.08,
+    "int_limit": 0.5
+  },
+
+  "vision": {
+    "threshold_min": 100,
+    "threshold_max": 255,
+    "color_threshold": 0.7,
+    "min_line_area": 0.0,
+    "max_test_attempts": 10
+  },
+
+  "line_control": {
+    "steps_count": 200,
+    "weight_center": 80.0,
+    "weight_sigma": 50.0,
+    "offset_gain": 1.0,
+    "angle_gain": 0.15,
+    "curvature_gain": 1.0
+  },
+
+  "quadrant": {
+    "num": 24,
+    "offset_y": 0.0,
+    "spacing_y": 15.0
+  },
+
+  "history": {
+    "temp_duration": 2.0
+  },
+
+  "timing": {
+    "robot_loop_interval_ms": 30,
+    "button_debounce_ms": 500,
+    "button_poll_interval_ms": 50,
+    "backtrack_duration_ms": 10,
+    "sleep_time_s": 60,
+    "max_wait_time_s": 10,
+    "max_system_runtime_min": 5
+  },
+
+  "discord": {
+    "webhook_url": "\"https://discord.com/api/webhooks/1461702296311169086/XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2\"",
+    "retry_delay_ms": 2000
+  }
+}
