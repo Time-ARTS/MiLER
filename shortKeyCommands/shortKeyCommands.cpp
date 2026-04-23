@@ -1,4 +1,6 @@
 #include "shortKeyCommands.hpp"
+
+#include "config.hpp"
 #include "../settings.hpp"
 #include "../constructs.hpp"
 
@@ -24,10 +26,12 @@ shortKeyCommands::shortKeyCommands()
 
 void shortKeyCommands::bind(const int key, std::function<void()> action, const std::string& actionDescriptor)
 {
+    const auto& config = ConfigService::get();
+
     keyBindings_[tolower(key)] = std::move(action);
     const char c = toupper(static_cast<char>(key));
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (config.modules.debug)
     {
         const std::string function = actionDescriptor.empty() ? "none" : actionDescriptor;
         bindingReport_ += std::string("**") + c + "** to function - **" + function + "**\\n";
@@ -64,7 +68,9 @@ void shortKeyCommands::poll()
 
 void shortKeyCommands::flushBindingReport()
 {
-    if (!SETTINGS::CONTROL::MODULE::ENABLE_DEBUG || bindingReport_.empty())
+    const auto& config = ConfigService::get();
+
+    if (!config.modules.debug || bindingReport_.empty())
         return;
 
     const std::string msg = "## Bound keys:\\n" + bindingReport_;

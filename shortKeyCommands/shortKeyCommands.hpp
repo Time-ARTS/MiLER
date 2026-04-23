@@ -4,14 +4,14 @@
 #pragma once
 #include <functional>
 #include <string>
-#include <unordered_set>
+
+#include "constructs.hpp"
 
 struct Trigger;
 
 class shortKeyCommands {
 public:
     shortKeyCommands();
-
     void bind(int key, std::function<void()> action, const std::string& actionDescriptor = "");
     void addTrigger(int key, std::function<bool()> condition);
 

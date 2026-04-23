@@ -4,21 +4,25 @@
 
 #include <memory>
 #include <opencv2/opencv.hpp>
+
+#include "config.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
 Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
     : imageProcessor_(imageProcessor)
 {
-    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return;
+    const auto& config = ConfigService::get();
 
-    cap_.open(SETTINGS::VISION::CAMERA_INDEX, SETTINGS::VISION::CAMERA_SOURCE);
+    if (!config.modules.vision) return;
+
+    cap_.open(CAMERA::CAMERA_INDEX, CAMERA::CAMERA_SOURCE);
 
     camTest();
     frameTest();
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (config.modules.debug)
     {
-        std::string cameraInfo = "Camera opened successfully: index " + SETTINGS::VISION::CAMERA_INFO;
+        std::string cameraInfo = "Camera opened successfully: index " + CAMERA::CAMERA_INFO;
 
         const int backend = cap_.get(cv::CAP_PROP_BACKEND);
         cameraInfo += " | backend: " + std::to_string(backend);
@@ -32,8 +36,7 @@ void Vision::camTest() const
     {
         throw std::runtime_error("Could not open camera.");
     }
-
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (const auto& config_ = ConfigService::get(); config_.modules.debug)
     {
         std::cout << cv::getBuildInformation() << std::endl;
     }
@@ -65,7 +68,9 @@ cv::Mat Vision::getCurrentFrame()
     cv::cvtColor(currentFrame_, currentFrame_, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(currentFrame_, currentFrame_, cv::Size(5,5), 0);
 
-    constexpr int cutoff = static_cast<int>((1.0f - SETTINGS::VISION::COLOR_THRESHOLD) * 255.0f);
+    const auto& config_ = ConfigService::get();
+
+    const int cutoff = static_cast<int>((1.0f - config_.vision.color_threshold) * 255.0f);
 
     cv::threshold(currentFrame_, currentFrame_, cutoff, 255, cv::THRESH_BINARY_INV);
 
@@ -79,7 +84,9 @@ bool Vision::detectedLine()
 {
     lineDetected_ = false;
 
-    if (!SETTINGS::CONTROL::MODULE::ENABLE_VISION) return false;
+    const auto& config_ = ConfigService::get();
+
+    if (!config_.modules.vision) return false;
 
     const cv::Mat frame = getCurrentFrame();
     if (frame.empty()) return false;
@@ -90,5 +97,5 @@ bool Vision::detectedLine()
     cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, {9, 9}));
 
     const cv::Moments m = cv::moments(mask, true);
-    return m.m00 > SETTINGS::VISION::MIN_LINE_AREA;
+    return m.m00 > config_.vision.min_line_area;
 }

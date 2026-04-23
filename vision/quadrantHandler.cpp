@@ -3,12 +3,10 @@
 #include <chrono>
 
 #include "vision.hpp"
-#include "../settings.hpp"
 #include <opencv2/opencv.hpp>
 
+#include "config.hpp"
 #include "discordMessaging/discordMessaging.hpp"
-
-using namespace SETTINGS;
 
 Vector2 Quadrant::self(const cv::Mat& frame) const
 {
@@ -47,14 +45,16 @@ void ImageProcessor::quadrantize(const std::shared_ptr<Vision>& v)
 
     const cv::Mat frame = v->getCurrentFrame();
 
-    const auto totalHeight = static_cast<float>(frame.rows);
-    const float availableHeight = totalHeight - QUADRANT::SPACING_Y * (QUADRANT::NUM - 1);
-    const float quadrantHeight = availableHeight / QUADRANT::NUM;
+    const auto& config = ConfigService::get();
 
-    for (int i = 0; i < QUADRANT::NUM; ++i)
+    const auto totalHeight = static_cast<float>(frame.rows);
+    const float availableHeight = totalHeight - config.quadrant.spacing_y * (config.quadrant.num - 1);
+    const float quadrantHeight = availableHeight / config.quadrant.num;
+
+    for (int i = 0; i < config.quadrant.num; ++i)
     {
-        const int startY = static_cast<int>(QUADRANT::OFFSET_Y + static_cast<float>(i) * (quadrantHeight +
-            QUADRANT::SPACING_Y));
+        const int startY = static_cast<int>(config.quadrant.offset_y + static_cast<float>(i) * (quadrantHeight +
+            config.quadrant.spacing_y));
         const int height = static_cast<int>(std::max(
             0.0f, std::min(quadrantHeight, totalHeight - static_cast<float>(startY))));
 
@@ -79,12 +79,14 @@ std::vector<Vector2> ImageProcessor::processQuadrants(const cv::Mat& frame)
     fullHistory_.emplace_back(timestamp, lineMidpoints_);
     tempHistory_.emplace_back(timestamp, lineMidpoints_);
 
-    while (!tempHistory_.empty() && timestamp - tempHistory_.front().first > HISTORY::TEMP_DURATION)
+    const auto& config = ConfigService::get();
+
+    while (!tempHistory_.empty() && timestamp - tempHistory_.front().first > config.history.temp_duration)
     {
         tempHistory_.pop_front();
     }
 
-    if (CONTROL::MODULE::ENABLE_DEBUG)
+    if (config.modules.debug)
         DiscordMessenger::sendMessageToDiscord("Quadrants solved", MessageType::SUCCESS);
     return lineMidpoints_;
 }

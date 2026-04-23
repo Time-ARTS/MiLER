@@ -1,9 +1,13 @@
-#include "../settings.hpp"
 #include "motorController.hpp"
+
+#include <algorithm>
+
 #include "discordMessaging/discordMessaging.hpp"
 
 #include <thread>
 #include <chrono>
+
+#include "config.hpp"
 
 #ifdef __linux__
 #include <wiringPi.h>
@@ -21,11 +25,11 @@ bool MotorController::selfTest()
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         DiscordMessenger::sendMessageToDiscord("Motor Left driving: 120", MessageType::INFO);
-        pwmDrive(120, 0);   // Left forward
+        pwmDrive(120, 0); // Left forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         DiscordMessenger::sendMessageToDiscord("Motor Right driving: 120", MessageType::INFO);
-        pwmDrive(0, 120);   // Right forward
+        pwmDrive(0, 120); // Right forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         DiscordMessenger::sendMessageToDiscord("Motor Both driving: 120", MessageType::INFO);
@@ -56,9 +60,13 @@ void MotorController::turnOffMotors()
 {
     pwmDrive(0, 0);
 
-    #ifdef __linux__
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+#ifdef __linux__
     digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, LOW);
-    #endif
+#endif
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void MotorController::turnOnMotors()
@@ -67,7 +75,11 @@ void MotorController::turnOnMotors()
     digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
 #endif
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     pwmDrive(0, 0);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void MotorController::drive(const double& left, const double& right)
@@ -76,13 +88,14 @@ void MotorController::drive(const double& left, const double& right)
 
     pwmDrive(left, right);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_LOGGING && SETTINGS::CONTROL::MODULE::ENABLE_STEERING_COUNTER)
+    if (const auto& config_ = ConfigService::get(); config_.modules.logging && config_.modules.steering_counter)
     {
-        motorCommandLog_ += "Steering: LEFT - " + std::to_string(left) + " |.| RIGHT - " + std::to_string(right) + "\\n";
+        motorCommandLog_ += "Steering: LEFT - " + std::to_string(left) + " |.| RIGHT - " + std::to_string(right) +
+            "\\n";
 
-        steeringCount_ = std::clamp(steeringCount_ + 1, 0, SETTINGS::MOTOR::STEERING_COUNT);
+        steeringCount_ = std::clamp(steeringCount_ + 1, 0, config_.motor.steering_count);
 
-        if (steeringCount_ == SETTINGS::MOTOR::STEERING_COUNT)
+        if (steeringCount_ == config_.motor.steering_count)
         {
             DiscordMessenger::sendMessageToDiscord(motorCommandLog_);
             motorCommandLog_.clear();
@@ -115,7 +128,9 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
         auto [left, right] = it->speed;
         pwmDrive(-left, -right);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
+        const auto& config_ = ConfigService::get();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(config_.timing.robot_loop_interval_ms));
     }
 }
 

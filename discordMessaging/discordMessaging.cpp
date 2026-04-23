@@ -9,7 +9,6 @@
 #endif
 
 #include "discordMessaging.hpp"
-#include "settings.hpp"
 
 #include <curl/curl.h>
 #include <unordered_map>
@@ -17,9 +16,12 @@
 #include <iostream>
 #include <chrono>
 
+#include "discordConfig.hpp"
 
-void DiscordMessenger::init()
+void DiscordMessenger::init(const DiscordConfig& cfg)
 {
+    config_ = cfg;
+
 #ifdef _WIN32
     curl_global_init(CURL_GLOBAL_DEFAULT);
 #endif
@@ -32,7 +34,8 @@ void DiscordMessenger::shutdown()
 #endif
 }
 
-void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type, const bool& passThrough)
+void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type,
+                                            const bool& passThrough)
 {
     static const std::unordered_map<MessageType, std::string> typeToString = {
         {MessageType::INFO, "INFO"},
@@ -42,9 +45,9 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
         {MessageType::SUCCESS, "SUCCESS"}
     };
 
-    if (!(SETTINGS::CONTROL::MODULE::ENABLE_DISCORD || passThrough))
+    if (!(config_.active || passThrough))
     {
-        if (!SETTINGS::CONTROL::MODULE::ENABLE_LOGGING) return;
+        if (!config_.logging) return;
 
         const std::string& typeStr = typeToString.at(type);
         std::cout << typeStr << ":  " << text << std::endl;
@@ -54,7 +57,7 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
     CURL* curl = curl_easy_init();
     if (!curl) return;
 
-    const std::string webhook_url = SETTINGS::CONTROL::DISCORD::WEBHOOK_URL;
+    const std::string webhook_url = config_.webhook_url;
 
     static const std::unordered_map<MessageType, int> typeToColor = {
         {MessageType::INFO, 5814783},
@@ -82,10 +85,10 @@ void DiscordMessenger::sendMessageToDiscord(const std::string& text, const Messa
     if (const CURLcode res = curl_easy_perform(curl); res != CURLE_OK)
     {
         std::cerr << "Discord send failed: " << curl_easy_strerror(res)
-            << ", retrying in " << SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS << "ms\n";
+            << ", retrying in " << config_.retry_delay_ms << "ms\n";
 
         std::this_thread::sleep_for(
-            std::chrono::milliseconds(SETTINGS::CONTROL::DISCORD::RETRY_DELAY_MS)
+            std::chrono::milliseconds(config_.retry_delay_ms)
         );
 
         curl_easy_perform(curl);

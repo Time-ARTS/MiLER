@@ -12,6 +12,7 @@
 #include <thread>
 #include <memory>
 
+#include "config.hpp"
 #include "vision/debugRenderer.hpp"
 
 Loop::Loop()
@@ -47,16 +48,18 @@ Loop::Loop()
 
 void Loop::run(const std::atomic<bool>& running)
 {
+    const auto& config = ConfigService::get();
+
     DiscordMessenger::sendMessageToDiscord("Loop started.", MessageType::INFO);
 
     while (true)
     {
-        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        if (config.modules.debug)
             DiscordMessenger::sendMessageToDiscord("LineTest activated", MessageType::INFO);
 
         lineTest();
 
-        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        if (config.modules.debug)
         {
             DiscordMessenger::sendMessageToDiscord(
                 lineDetected_
@@ -72,7 +75,7 @@ void Loop::run(const std::atomic<bool>& running)
             break;
         }
 
-        if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+        if (config.modules.debug)
             DiscordMessenger::sendMessageToDiscord("Checking for activated keys", MessageType::INFO);
 
         shortKeyCommands_->poll();
@@ -83,21 +86,23 @@ void Loop::run(const std::atomic<bool>& running)
 
 void Loop::loop() const
 {
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    const auto& config = ConfigService::get();
+
+    if (config.modules.debug)
         DiscordMessenger::sendMessageToDiscord("Loop itteration started.", MessageType::INFO);
 
     const auto points = vision_->processFrame();
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (config.modules.debug)
         DiscordMessenger::sendMessageToDiscord("Points processed, continuing...", MessageType::SUCCESS);
 
     const auto line = controlExtractor_->createLine(points);
     auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorVector(line);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (config.modules.debug)
         DiscordMessenger::sendMessageToDiscord("Motor-controlls accuired, continuing...", MessageType::SUCCESS);
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_MIRRORING)
+    if (config.modules.mirroring)
     {
         const cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();
@@ -110,7 +115,7 @@ void Loop::loop() const
         "Speed -> Left: " + std::to_string(leftMotorSpeed) + "   - Right: " + std::to_string(rightMotorSpeed),
         MessageType::DEBUG);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS));
+    std::this_thread::sleep_for(std::chrono::milliseconds(config.timing.robot_loop_interval_ms));
 }
 
 void Loop::lineTest()
@@ -132,8 +137,10 @@ void Loop::lineTest()
             MessageType::WARNING
         );
 
-        constexpr auto maxRecoveryTime = SETTINGS::CONTROL::TIME::MAX_WAIT_TIME;
-        constexpr auto step = std::chrono::milliseconds(SETTINGS::CONTROL::TIME::BACKTRACK_DURATION);
+        const auto& config = ConfigService::get();
+
+        const auto maxRecoveryTime = std::chrono::seconds(config.timing.max_wait_time_s);
+        const auto step = std::chrono::milliseconds(config.timing.backtrack_duration_ms);
 
         const auto recoveryStart = std::chrono::steady_clock::now();
 

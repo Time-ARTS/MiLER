@@ -41,14 +41,10 @@ if (UNIX AND NOT APPLE)
     find_library(WIRINGPI_LIB NAMES wiringPi)
 endif ()
 
-# ---- Include Directories ----
-include_directories(
-        ${OpenCV_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}
-)
-
-# ---- Source Files (common) ----
-set(COMMON_SOURCES
+add_executable(MiLER
+        loop.cpp
+        run.cpp
+        config.cpp
         shortKeyCommands/shortKeyCommands.cpp
         vision/vision.cpp
         vision/debugRenderer.cpp
@@ -57,33 +53,24 @@ set(COMMON_SOURCES
         motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
         discordMessaging/discordMessaging.cpp
-)
-
-set(HEADERS
-        constructs.hpp
-        loop.hpp
-        settings.hpp
-        shortKeyCommands/shortKeyCommands.hpp
-        vision/vision.hpp
-        vision/debugRenderer.hpp
-        vision/quadrantHandler.hpp
-        motorControl/PID.hpp
-        motorControl/controlExtractor.hpp
-        motorControl/motorController.hpp
-        discordMessaging/discordMessaging.hpp
-)
-
-add_executable(MiLER
-        loop.cpp
-        run.cpp
-        ${COMMON_SOURCES}
-        ${HEADERS}
+        discordMessaging/discordConfig.cpp
 )
 
 add_executable(networkBootIP
         discordMessaging/networkBootIP.cpp
         discordMessaging/networkInfo.cpp
         discordMessaging/discordMessaging.cpp
+        discordMessaging/discordConfig.cpp
+)
+
+# ---- Include Directories ----
+target_include_directories(MiLER PRIVATE
+        ${OpenCV_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}
+)
+
+target_include_directories(networkBootIP PRIVATE
+        ${CMAKE_SOURCE_DIR}
 )
 
 # ---- Windows: ensure OpenCV DLLs are found at runtime ----

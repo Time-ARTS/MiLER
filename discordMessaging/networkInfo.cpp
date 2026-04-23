@@ -14,13 +14,14 @@
 
 namespace NetworkInfo
 {
+
 #ifdef __linux__
     static IPResult getWlanIP_Linux()
     {
         struct ifaddrs* ifaddr;
 
         if (getifaddrs(&ifaddr) == -1)
-            return { IPResult::ERROR, "getifaddrs failed" };
+            return { IPStatus::ERROR, "getifaddrs failed" };
 
         for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
         {
@@ -30,6 +31,7 @@ namespace NetworkInfo
             {
                 std::string iface(ifa->ifa_name);
 
+                // Only WiFi interfaces
                 if (iface == "wlan0" || iface.rfind("wl", 0) == 0)
                 {
                     char host[INET_ADDRSTRLEN];
@@ -37,14 +39,20 @@ namespace NetworkInfo
 
                     inet_ntop(AF_INET, &sa->sin_addr, host, INET_ADDRSTRLEN);
 
+                    std::string ip(host);
+
+                    // Ignore loopback
+                    if (ip == "127.0.0.1")
+                        continue;
+
                     freeifaddrs(ifaddr);
-                    return { IPResult::OK, host };
+                    return { IPStatus::OK, ip };
                 }
             }
         }
 
         freeifaddrs(ifaddr);
-        return { IPResult::NO_IP, "NOT FOUND" };
+        return { IPStatus::NO_IP, "NOT FOUND" };
     }
 #endif
 
@@ -53,55 +61,53 @@ namespace NetworkInfo
 #ifdef __linux__
         return getWlanIP_Linux();
 #else
-        return { IPResult::ERROR, "UNSUPPORTED PLATFORM" };
+        return { IPStatus::ERROR, "UNSUPPORTED PLATFORM" };
 #endif
     }
 
-    void sendStartupNetworkInfo()
+    void startIPMonitor()
     {
-        IPResult result;
-
-#ifdef __linux__
-        for (int i = 0; i < 10; ++i)
+        std::thread([]()
         {
-            result = getWlanIP();
+            std::string last_ip = "";
+            bool had_ip = false;
 
-            if (result.status == IPResult::OK)
-                break;
+            while (true)
+            {
+                IPResult result = getWlanIP();
 
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
+                if (result.status == IPStatus::OK)
+                {
+                    if (!had_ip || result.ip != last_ip)
+                    {
+                        last_ip = result.ip;
+                        had_ip = true;
 
-        if (result.status == IPResult::NO_IP)
-        {
-            DiscordMessenger::sendMessageToDiscord(
-                "Startup: wlan IP not found",
-                MessageType::WARNING,
-                true
-            );
-        }
-        else if (result.status == IPResult::ERROR)
-        {
-            DiscordMessenger::sendMessageToDiscord(
-                result.ip,
-                MessageType::ERROR,
-                true
-            );
-        }
-        else
-        {
-            DiscordMessenger::sendMessageToDiscord(
-                "System online | IP: " + result.ip + "\nSSH: pi@" + result.ip,
-                MessageType::SUCCESS,
-                true
-            );
-        }
-#else
-        DiscordMessenger::sendMessageToDiscord(
-            "System online | Network info unsupported on this platform",
-            MessageType::WARNING,
-            true
-        );
-#endif
+                        DiscordMessenger::sendMessageToDiscord(
+                            "IP Updated | " + result.ip + "\nSSH: pi@" + result.ip,
+                            MessageType::SUCCESS,
+                            true
+                        );
+                    }
+                }
+                else
+                {
+                    if (had_ip)
+                    {
+                        had_ip = false;
+
+                        DiscordMessenger::sendMessageToDiscord(
+                            "Connection lost (no IP)",
+                            MessageType::WARNING,
+                            true
+                        );
+                    }
+                }
+
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+            }
+
+        }).detach();
     }
+
 }

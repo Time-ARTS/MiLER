@@ -1,5 +1,6 @@
 #include "debugRenderer.hpp"
 
+#include "config.hpp"
 #include "quadrantHandler.hpp"
 #include "../settings.hpp"
 #include "discordMessaging/discordMessaging.hpp"
@@ -24,28 +25,28 @@ void DebugRenderer::render(const cv::Mat& frame, const std::vector<Quadrant>& qu
 
     // Quadrants
     for (const auto& [roi] : quadrants)
-        cv::rectangle(botView, roi, SETTINGS::QUADRANT::RENDER_QUADRANT, 1);
+        cv::rectangle(botView, roi, {184, 169, 245}, 1);
 
     // Detected points in each quadrant
     for (const auto& [x, y] : points)
-        cv::circle(botView, cv::Point(x, y), 5, SETTINGS::QUADRANT::RENDER_POINT, -1);
+        cv::circle(botView, cv::Point(x, y), 5, {250, 206, 91}, -1);
 
     // Draw centerline
-    cv::line(botView, SETTINGS::SCREEN::CENTER_BOTTOM, SETTINGS::SCREEN::CENTER_TOP, SETTINGS::QUADRANT::RENDER_CENTERLINE, 2);
+    cv::line(botView, {SETTINGS::SCREEN::CENTER_X, SETTINGS::SCREEN::CENTER_Y}, {SETTINGS::SCREEN::CENTER_X, 0}, {91, 206, 250}, 2);
 
     // Draw the predictive line
     cv::Point prevPoint = { static_cast<int>(line[0]), 0 };
     for (int i = 1; i < line.size(); ++i)
     {
         const cv::Point currPoint = { static_cast<int>(line[i]), i };
-        cv::line(botView, prevPoint, currPoint, SETTINGS::QUADRANT::RENDER_LINE, 2);
+        cv::line(botView, prevPoint, currPoint, {0, 206, 0}, 2);
         prevPoint = currPoint;
     }
 
     // Draw motor-line
     renderMotorLine(botView, static_cast<float>(leftSpeed), static_cast<float>(rightSpeed));
 
-    if (SETTINGS::CONTROL::MODULE::ENABLE_DEBUG)
+    if (const auto& config = ConfigService::get(); config.modules.debug)
         DiscordMessenger::sendMessageToDiscord("Window successfully rendered: MILLER DEBUG VIEW", MessageType::DEBUG);
 
     cv::imshow("MILLER DEBUG VIEW", botView);
@@ -57,9 +58,9 @@ void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, cons
     const float diff = right - left;          // turning direction
     const float avgSpeed = (left + right) / 2.0f;  // overall speed
 
-    const cv::Point center = SETTINGS::SCREEN::CENTER_BOTTOM;
-    constexpr float circleRadius = SETTINGS::QUADRANT::CIRCLE_RADIUS;
-    const auto circleColor = SETTINGS::QUADRANT::RENDER_MOTOR_LINE;
+    const cv::Point center = {SETTINGS::SCREEN::CENTER_X, SETTINGS::SCREEN::CENTER_Y};
+    constexpr float circleRadius = 50.0f;
+    const cv::Scalar circleColor = {0, 0, 255};
 
     // Draw base circle
     cv::circle(frame, center, circleRadius, circleColor, 2);
@@ -75,5 +76,5 @@ void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, cons
     };
 
     // Direction line
-    cv::line(frame, center, lineEnd, SETTINGS::QUADRANT::RENDER_MOTOR_LINE, 2);
+    cv::line(frame, center, lineEnd, {0, 0, 255}, 2);
 }

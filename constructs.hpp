@@ -4,7 +4,6 @@
 #pragma once
 #include <chrono>
 #include <functional>
-#include <string>
 #include <iostream>
 
 #ifdef _WIN32
@@ -29,13 +28,88 @@ struct Vector2
     Vector2 operator-(const Vector2& other) const { return {x - other.x, y - other.y}; }
 };
 
-struct ToggleBinding {
+struct ToggleBinding
+{
     char key;
     bool* flag;
-    const std::string name;
+    const char* name;
 };
 
-struct Trigger {
+struct Config
+{
+    struct Modules
+    {
+        std::vector<ToggleBinding> toggleTable;
+
+        bool driving,
+             vision,
+             discord,
+             logging,
+             debug,
+             mirroring,
+             steering_counter;
+    } modules;
+
+    struct Motor
+    {
+        double default_speed,
+               min_speed,
+               max_speed;
+
+        int steering_count;
+    } motor;
+
+    struct PID
+    {
+        double kp, ki, kd, int_limit;
+    } pid;
+
+    struct Vision
+    {
+        int threshold_min,
+            threshold_max,
+            max_test_attempts;
+
+        double color_threshold,
+               min_line_area;
+    } vision;
+
+    struct LineControl
+    {
+        int steps_count;
+        double weight_center,
+               weight_sigma,
+               offset_gain,
+               angle_gain,
+               curvature_gain;
+    } line_control;
+
+    struct Quadrant
+    {
+        int num;
+        float offset_y,
+              spacing_y;
+    } quadrant;
+
+    struct History
+    {
+        float temp_duration;
+    } history;
+
+    struct Timing
+    {
+        int robot_loop_interval_ms,
+            button_debounce_ms,
+            button_poll_interval_ms,
+            backtrack_duration_ms,
+            sleep_time_s,
+            max_wait_time_s,
+            max_system_runtime_min;
+    } timing;
+};
+
+struct Trigger
+{
     std::function<bool()> condition;
     int key;
 };

@@ -6,12 +6,15 @@
 #include <numeric>
 #include <ranges>
 #include <cmath>
+#include <opencv2/core.hpp>
+
+#include "config.hpp"
 
 ControlExtractor::ControlExtractor(const std::shared_ptr<PID>& pid) : pid_(pid)
 {
 }
 
-std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& points)
+std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& points) const
 {
     std::vector<Vector2> validPoints;
     for (const auto& p : points)
@@ -21,13 +24,13 @@ std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& poi
     }
 
     if (validPoints.size() < 3)
-        return SETTINGS::LINE_CONTROL::DEFAULT_CENTERLINE;
+        return DEFAULT_CENTERLINE_;
 
     const auto [A, B] = computeMatrix(validPoints);
 
     cv::Mat coeff;
     if (!cv::solve(A, B, coeff, cv::DECOMP_SVD))
-        return SETTINGS::LINE_CONTROL::DEFAULT_CENTERLINE;
+        return DEFAULT_CENTERLINE_;
 
     std::vector<double> line(480);
     for (int y = 0; y < 480; y++)
@@ -41,55 +44,69 @@ std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& poi
 
 std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<double>& estimatedLine) const
 {
+    const auto& config_ = ConfigService::get();
+
+    const double base = config_.motor.default_speed;
+
     if (estimatedLine.empty())
-        return {SETTINGS::MOTOR::DEFAULT_SPEED, SETTINGS::MOTOR::DEFAULT_SPEED};
+        return {base, base};
 
-    const auto H = static_cast<int>(estimatedLine.size());
-    constexpr double centerX = SETTINGS::SCREEN::CENTER_X;
+    const int H = static_cast<int>(estimatedLine.size());
+    const double centerX = SETTINGS::SCREEN::CENTER_X;
 
-    constexpr double y0    = SETTINGS::LINE_CONTROL::WEIGHT_CENTER;
-    constexpr double sigma = SETTINGS::LINE_CONTROL::WEIGHT_SIGMA;
+    // --- Gaussian weighted center ---
+    const double y0    = config_.line_control.weight_center;
+    const double sigma = config_.line_control.weight_sigma;
 
-    // Create index view [0, H)
-    auto indices = std::views::iota(0, H);
+    double num = 0.0;
+    double den = 0.0;
 
-    // Accumulate weighted sum using transform_reduce
-    const auto [num, den] = std::transform_reduce(
-        indices.begin(), indices.end(),
-        std::pair{0.0, 0.0},
-        [](auto a, auto b) {
-            return std::pair{a.first + b.first, a.second + b.second};
-        },
-        [&](const int y) {
-            const double y_prime = (H - 1) - y;
-            const double w = std::exp(-std::pow(y_prime - y0, 2) / (2 * sigma * sigma));
-            return std::pair{w * estimatedLine[y], w};
-        }
-    );
+    for (int y = 0; y < H; ++y)
+    {
+        const double y_prime = (H - 1) - y;
+        const double w = std::exp(-std::pow(y_prime - y0, 2) / (2 * sigma * sigma));
 
-    const double x_star = num / den;
+        num += w * estimatedLine[y];
+        den += w;
+    }
 
-    // --- Local slope (central difference) ---
-    const int y_center = std::clamp<int>(H - 1 - static_cast<int>(y0), 1, H - 2);
+    // --- Safety check ---
+    if (den < 1e-6)
+        return {base, base};
 
-    const double slope =
-        (estimatedLine[y_center + 1] - estimatedLine[y_center - 1]) / 2.0;
+    double raw_x_star = num / den;
 
-    // --- Error model ---
-    const double offset = x_star - centerX;
+    // --- Temporal smoothing (critical) ---
+    static double last_x_star = SETTINGS::SCREEN::CENTER_X;
+    const double alpha = 0.2; // responsiveness vs stability
 
-    const double error =
-        offset * SETTINGS::LINE_CONTROL::OFFSET_GAIN +
-        slope  * SETTINGS::LINE_CONTROL::ANGLE_GAIN;
+    double x_star = alpha * raw_x_star + (1.0 - alpha) * last_x_star;
+    last_x_star = x_star;
 
-    // --- Motor output ---
-    constexpr double base = SETTINGS::MOTOR::DEFAULT_SPEED;
-    constexpr double dt = SETTINGS::CONTROL::THREAD::ROBOT_LOOP_INTERVAL_MS / 1000.0f;
+    // --- NORMALIZED error [-1, 1] ---
+    double error = (x_star - centerX) / centerX;
 
-    const double control = pid_->update(error, dt);
+    // Clamp just in case of numerical spikes
+    error = std::clamp(error, -1.0, 1.0);
 
-    const double left  = std::clamp(base + control, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
-    const double right = std::clamp(base - control, SETTINGS::MOTOR::MIN_SPEED, SETTINGS::MOTOR::MAX_SPEED);
+    // --- PID ---
+    const double dt = config_.timing.robot_loop_interval_ms / 1000.0;
+    double control = pid_->update(error, dt);
+
+    // --- Scale control to motor domain ---
+    const double control_max = base * 0.5; // max turning authority
+    control *= control_max;
+
+    // --- Clamp control (prevents flips) ---
+    control = std::clamp(control, -control_max, control_max);
+
+    // --- Motor mix ---
+    double left  = base + control;
+    double right = base - control;
+
+    // --- Final hardware clamp ---
+    left  = std::clamp(left,  config_.motor.min_speed, config_.motor.max_speed);
+    right = std::clamp(right, config_.motor.min_speed, config_.motor.max_speed);
 
     return {left, right};
 }

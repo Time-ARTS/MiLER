@@ -1,15 +1,20 @@
 #include "PID.hpp"
-#include "settings.hpp"
+
+#include <algorithm>
+
+#include "config.hpp"
 
 double PID::update(const double error, const double dt)
 {
+    const auto& config_ = ConfigService::get();
+
     integral_ += error * dt;
-    integral_ = std::clamp(integral_,-SETTINGS::PID::INT_LIMIT, SETTINGS::PID::INT_LIMIT);
+    integral_ = std::clamp(integral_,-config_.pid.int_limit, config_.pid.int_limit);
 
     const double derivative = (error - prevError_) / dt;
     prevError_ = error;
 
-    return SETTINGS::PID::KP * error +
-           SETTINGS::PID::KI * integral_ +
-           SETTINGS::PID::KD * derivative;
+    return config_.pid.kd * error +
+           config_.pid.ki * integral_ +
+           config_.pid.kp * derivative;
 }

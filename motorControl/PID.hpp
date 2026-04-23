@@ -1,6 +1,9 @@
 #ifndef MILLER_PID_HPP
 #define MILLER_PID_HPP
 
+#pragma once
+#include "constructs.hpp"
+
 class PID
 {
 public:

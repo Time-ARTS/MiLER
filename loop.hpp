@@ -7,17 +7,17 @@
 
 #include "motorControl/motorController.hpp"
 
+class PID;
 class ControlExtractor;
 class ImageProcessor;
 class MotorController;
-class PID;
 class Vision;
 class shortKeyCommands;
 
 class Loop
 {
 public:
-    Loop();
+    explicit Loop();
 
     void run(const std::atomic<bool>& running);
 
