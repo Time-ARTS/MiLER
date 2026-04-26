@@ -55,8 +55,8 @@ void DebugRenderer::render(const cv::Mat& frame, const std::vector<Quadrant>& qu
 
 void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, const float right)
 {
-    const float diff = right - left;          // turning direction
-    const float avgSpeed = (left + right) / 2.0f;  // overall speed
+    const float base = static_cast<float>(ConfigService::get().motor.default_speed);
+    const float diff = (right - left) / base;
 
     const cv::Point center = {SETTINGS::SCREEN::CENTER_X, SETTINGS::SCREEN::CENTER_Y};
     constexpr float circleRadius = 50.0f;

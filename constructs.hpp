@@ -91,6 +91,14 @@ struct Config
               spacing_y;
     } quadrant;
 
+    struct Perspective
+    {
+        bool enabled;
+        double vanishing_y;
+        double trapezoid_top_width;
+        double trapezoid_bottom_width;
+    } perspective;
+
     struct History
     {
         float temp_duration;

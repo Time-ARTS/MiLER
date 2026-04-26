@@ -21,7 +21,7 @@ private:
     static std::tuple<cv::Mat, cv::Mat> computeMatrix(const std::vector<Vector2>& points);
     const std::shared_ptr<PID>& pid_;
 
-    const std::vector<double> DEFAULT_CENTERLINE_ = std::vector<double>(SETTINGS::SCREEN::CENTER_Y, SETTINGS::SCREEN::CENTER_X/2);
+    const std::vector<double> DEFAULT_CENTERLINE_ = std::vector<double>(SETTINGS::SCREEN::CENTER_Y, SETTINGS::SCREEN::CENTER_X);
 
     mutable double last_x_star = SETTINGS::SCREEN::CENTER_X;
 };

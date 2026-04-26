@@ -14,7 +14,7 @@ double PID::update(const double error, const double dt)
     const double derivative = (error - prevError_) / dt;
     prevError_ = error;
 
-    return config_.pid.kd * error +
+    return config_.pid.kp * error +
            config_.pid.ki * integral_ +
-           config_.pid.kp * derivative;
+           config_.pid.kd * derivative;
 }

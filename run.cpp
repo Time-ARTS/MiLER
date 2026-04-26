@@ -14,6 +14,8 @@
 #include <atomic>
 #include <iostream>
 
+#include "vision/perspectiveTuner.hpp"
+
 #ifdef __linux__
 #include <wiringPi.h>
 #include <softPwm.h>
@@ -76,15 +78,22 @@ int main()
             std::this_thread::sleep_for(std::chrono::milliseconds(config.timing.button_debounce_ms));
         }, "Start");
 
+        keys->bind(SETTINGS::KEY::PERSPECTIVE, [&loop]
+        {
+            PerspectiveTuner::open(*loop.getVision());
+        }, "Perspective tuner");
+
         keys->bind(SETTINGS::KEY::ERROR_TEST, []
         {
             throw std::runtime_error("Error catch test");
-            MotorController::turnOffMotors();
         }, "Error catch test");
 
         keys->bind(SETTINGS::KEY::QUIT, []
         {
             DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
+
+            MotorController::turnOffMotors();
+
             std::exit(EXIT_SUCCESS);
         }, "Quit");
 

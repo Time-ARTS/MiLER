@@ -123,7 +123,7 @@ void Loop::lineTest()
     try
     {
         auto points = vision_->processFrame();
-        lineDetected_ = !points.empty();
+        lineDetected_ = std::ranges::any_of(points, [](const Vector2& p) { return p.x >= 0 && p.y >= 0; });
         const auto now = std::chrono::steady_clock::now();
 
         if (lineDetected_)

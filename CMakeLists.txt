@@ -49,6 +49,7 @@ add_executable(MiLER
         vision/vision.cpp
         vision/debugRenderer.cpp
         vision/quadrantHandler.cpp
+        vision/perspectiveTuner.cpp
         motorControl/PID.cpp
         motorControl/controlExtractor.cpp
         motorControl/motorController.cpp

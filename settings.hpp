@@ -40,6 +40,7 @@ namespace SETTINGS
         constexpr char START = 'r';
         constexpr char QUIT = 'q';
         constexpr char ERROR_TEST = 'e';
+        constexpr char PERSPECTIVE = 'p';
     }
 
     namespace SCREEN

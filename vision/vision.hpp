@@ -34,10 +34,14 @@ class Vision
 {
     cv::VideoCapture cap_;
     cv::Mat currentFrame_;
+    cv::Size warpSize_;
+    cv::Mat perspectiveMatrix_;
 
 public:
     explicit Vision(const std::shared_ptr<ImageProcessor>& imageProcessor);
+    cv::Mat getRawFrame();
     cv::Mat getCurrentFrame();
+    void initPerspective(int frameWidth, int frameHeight);
 
     bool detectedLine();
     std::vector<Vector2> processFrame() const { return imageProcessor_->processQuadrants(currentFrame_); }
