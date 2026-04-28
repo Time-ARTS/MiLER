@@ -2,7 +2,6 @@
 
 #include "config.hpp"
 #include "quadrantHandler.hpp"
-#include "../settings.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 
 void DebugRenderer::openWindow()
@@ -32,7 +31,8 @@ void DebugRenderer::render(const cv::Mat& frame, const std::vector<Quadrant>& qu
         cv::circle(botView, cv::Point(x, y), 5, {250, 206, 91}, -1);
 
     // Draw centerline
-    cv::line(botView, {SETTINGS::SCREEN::CENTER_X, SETTINGS::SCREEN::CENTER_Y}, {SETTINGS::SCREEN::CENTER_X, 0}, {91, 206, 250}, 2);
+    const auto& config_ = ConfigService::get().screen;
+    cv::line(botView, {config_.center_x, config_.center_y}, {config_.center_x, 0}, {91, 206, 250}, 2);
 
     // Draw the predictive line
     cv::Point prevPoint = { static_cast<int>(line[0]), 0 };
@@ -58,7 +58,8 @@ void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, cons
     const float base = static_cast<float>(ConfigService::get().motor.default_speed);
     const float diff = (right - left) / base;
 
-    const cv::Point center = {SETTINGS::SCREEN::CENTER_X, SETTINGS::SCREEN::CENTER_Y};
+    const auto& config_ = ConfigService::get().screen;
+    const cv::Point center = {config_.center_x, config_.center_y};
     constexpr float circleRadius = 50.0f;
     const cv::Scalar circleColor = {0, 0, 255};
 

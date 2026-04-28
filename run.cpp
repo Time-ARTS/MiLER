@@ -1,5 +1,4 @@
 #include "config.hpp"
-#include "settings.hpp"
 #include "shortKeyCommands/shortKeyCommands.hpp"
 #include "loop.hpp"
 
@@ -23,8 +22,8 @@
 
 int main()
 {
-    ConfigService::init(SETTINGS::CONFIG_PATH);
-    DiscordMessenger::init(DiscordConfig::loadDiscordConfig(SETTINGS::CONFIG_PATH));
+    ConfigService::init("..//config.json");
+    DiscordMessenger::init(DiscordConfig::loadDiscordConfig("..//config.json"));
 
     try
     {
@@ -39,22 +38,22 @@ int main()
 #ifdef __linux__
         wiringPiSetupGpio();
 
-        pinMode(BUTTON::START_STOP_PIN, INPUT);
-        pullUpDnControl(BUTTON::START_STOP_PIN, PUD_UP);
+        pinMode(config.button.start_stop, INPUT);
+        pullUpDnControl(config.button.start_stop, PUD_UP);
 
-        pinMode(SETTINGS::MOTOR::PIN::STANDBY, OUTPUT);
+        pinMode(config.motor_pins.stby, OUTPUT);
 
-        pinMode(SETTINGS::MOTOR::PIN::EN_LEFT, OUTPUT);
-        pinMode(SETTINGS::MOTOR::PIN::IN1_LEFT, OUTPUT);
-        pinMode(SETTINGS::MOTOR::PIN::IN2_LEFT, OUTPUT);
+        pinMode(config.motor_pins.pwma_l, OUTPUT);
+        pinMode(config.motor_pins.ai1, OUTPUT);
+        pinMode(config.motor_pins.ai2, OUTPUT);
 
-        pinMode(SETTINGS::MOTOR::PIN::EN_RIGHT, OUTPUT);
-        pinMode(SETTINGS::MOTOR::PIN::IN1_RIGHT, OUTPUT);
-        pinMode(SETTINGS::MOTOR::PIN::IN2_RIGHT, OUTPUT);
+        pinMode(config.motor_pins.pwmb_r, OUTPUT);
+        pinMode(config.motor_pins.bi1, OUTPUT);
+        pinMode(config.motor_pins.bi2, OUTPUT);
 
-        if (softPwmCreate(SETTINGS::MOTOR::PIN::EN_LEFT, 0, 255) != 0)
+        if (softPwmCreate(config.motor_pins.pwma_l, 0, 255) != 0)
             DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_LEFT", MessageType::ERROR);
-        if (softPwmCreate(SETTINGS::MOTOR::PIN::EN_RIGHT, 0, 255) != 0)
+        if (softPwmCreate(config.motor_pins.pwmb_r, 0, 255) != 0)
             DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_RIGHT", MessageType::ERROR);
 
         loop.motorTest();
@@ -65,7 +64,7 @@ int main()
 
         const auto keys = loop.getShortKeyCommands();
 
-        keys->bind(SETTINGS::KEY::START, [&running, &lastActivity, config]
+        keys->bind(config.keys.start, [&running, &lastActivity, config]
         {
             running = !running;
 
@@ -78,17 +77,17 @@ int main()
             std::this_thread::sleep_for(std::chrono::milliseconds(config.timing.button_debounce_ms));
         }, "Start");
 
-        keys->bind(SETTINGS::KEY::PERSPECTIVE, [&loop]
+        keys->bind(config.keys.perspective, [&loop]
         {
             PerspectiveTuner::open(*loop.getVision());
         }, "Perspective tuner");
 
-        keys->bind(SETTINGS::KEY::ERROR_TEST, []
+        keys->bind(config.keys.error_test, [&loop]
         {
             throw std::runtime_error("Error catch test");
         }, "Error catch test");
 
-        keys->bind(SETTINGS::KEY::QUIT, []
+        keys->bind(config.keys.quit, [&loop]
         {
             DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
 
@@ -108,9 +107,9 @@ int main()
         }
 
 #ifdef __linux__
-        keys->addTrigger(BUTTON::KEY::START, [&]
+        keys->addTrigger(config.keys.start, [&]
         {
-            return (digitalRead(BUTTON::START_STOP_PIN) == (BUTTON::ACTIVE_LOW ? LOW : HIGH));
+            return (digitalRead(config.button.start_stop) == (config_.button.active_low ? LOW : HIGH));
         });
 #endif
 

@@ -30,40 +30,131 @@ struct Vector2
 
 struct ToggleBinding
 {
-    char key;
+    std::string key;
     bool* flag;
     const char* name;
 };
 
 struct Config
 {
+    // --- Button ---
+    struct Button
+    {
+        int start_stop;
+        bool active_low;
+    } button;
+
+    // --- History ---
+    struct History
+    {
+        float temp_duration;
+    } history;
+
+    // --- Keys ---
+    struct keys
+    {
+        std::string error_test,
+             perspective,
+             quit,
+             start;
+    } keys;
+
+    // --- Line control ---
+    struct LineControl
+    {
+        int steps_count;
+
+        double angle_gain,
+               curvature_gain,
+               offset_gain,
+               weight_center,
+               weight_sigma;
+    } line_control;
+
+    // --- Modules ---
     struct Modules
     {
         std::vector<ToggleBinding> toggleTable;
 
-        bool driving,
-             vision,
+        bool debug,
              discord,
+             driving,
              logging,
-             debug,
              mirroring,
-             steering_counter;
+             steering_counter,
+             vision;
     } modules;
 
+    // --- Motor ---
     struct Motor
     {
         double default_speed,
-               min_speed,
-               max_speed;
+               max_speed,
+               min_speed;
 
         int steering_count;
     } motor;
 
+    // --- Motor pins ---
+    struct MotorPins
+    {
+        int ai1,
+            ai2,
+            bi1,
+            bi2,
+            pwma_l,
+            pwmb_r,
+            stby;
+    } motor_pins;
+
+    // --- Perspective ---
+    struct Perspective
+    {
+        bool enabled;
+        double trapezoid_bottom_width;
+        double trapezoid_top_width;
+        double vanishing_y;
+    } perspective;
+
+    // --- PID ---
     struct PID
     {
-        double kp, ki, kd, int_limit;
+        double kp,
+               ki,
+               kd,
+               int_limit;
     } pid;
 
+    // --- Quadrant ---
+    struct Quadrant
+    {
+        int num;
+        float offset_y,
+              spacing_y;
+    } quadrant;
+
+    // --- Screen ---
+    struct Screen
+    {
+        int width,
+            height,
+            center_x,
+            center_y;
+    } screen;
+
+    // --- Timing ---
+    struct Timing
+    {
+        int backtrack_duration_ms,
+            button_debounce_ms,
+            button_poll_interval_ms,
+            max_system_runtime_min,
+            max_wait_time_s,
+            robot_loop_interval_ms,
+            sleep_time_s;
+    } timing;
+
+    // --- Vision ---
     struct Vision
     {
         int threshold_min,
@@ -73,47 +164,6 @@ struct Config
         double color_threshold,
                min_line_area;
     } vision;
-
-    struct LineControl
-    {
-        int steps_count;
-        double weight_center,
-               weight_sigma,
-               offset_gain,
-               angle_gain,
-               curvature_gain;
-    } line_control;
-
-    struct Quadrant
-    {
-        int num;
-        float offset_y,
-              spacing_y;
-    } quadrant;
-
-    struct Perspective
-    {
-        bool enabled;
-        double vanishing_y;
-        double trapezoid_top_width;
-        double trapezoid_bottom_width;
-    } perspective;
-
-    struct History
-    {
-        float temp_duration;
-    } history;
-
-    struct Timing
-    {
-        int robot_loop_interval_ms,
-            button_debounce_ms,
-            button_poll_interval_ms,
-            backtrack_duration_ms,
-            sleep_time_s,
-            max_wait_time_s,
-            max_system_runtime_min;
-    } timing;
 };
 
 struct Trigger

@@ -1,5 +1,4 @@
 #include "vision.hpp"
-#include "../settings.hpp"
 #include "quadrantHandler.hpp"
 
 #include <memory>

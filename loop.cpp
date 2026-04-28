@@ -1,5 +1,4 @@
 #include "loop.hpp"
-#include "settings.hpp"
 #include "shortKeyCommands/shortKeyCommands.hpp"
 #include "discordMessaging/discordMessaging.hpp"
 

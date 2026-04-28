@@ -24,20 +24,20 @@ bool MotorController::selfTest()
         turnOnMotors();
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Left driving: 120", MessageType::INFO);
-        pwmDrive(120, 0); // Left forward
+        DiscordMessenger::sendMessageToDiscord("Motor Left driving: 10", MessageType::INFO);
+        pwmDrive(10, 0); // Left forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Right driving: 120", MessageType::INFO);
-        pwmDrive(0, 120); // Right forward
+        DiscordMessenger::sendMessageToDiscord("Motor Right driving: 10", MessageType::INFO);
+        pwmDrive(0, 10); // Right forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Both driving: 120", MessageType::INFO);
-        pwmDrive(120, 120); // Both forward
+        DiscordMessenger::sendMessageToDiscord("Motor Both driving: 10", MessageType::INFO);
+        pwmDrive(10, 10); // Both forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Both driving: -120", MessageType::INFO);
-        pwmDrive(-120, -120); // Both reverse
+        DiscordMessenger::sendMessageToDiscord("Motor Both driving: -10", MessageType::INFO);
+        pwmDrive(-10, -10); // Both reverse
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         pwmDrive(0, 0); // Stop
@@ -63,7 +63,7 @@ void MotorController::turnOffMotors()
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 #ifdef __linux__
-    digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, LOW);
+    digitalWrite(ConfigService::get().motor_pins.stby, LOW);
 #endif
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -72,7 +72,7 @@ void MotorController::turnOffMotors()
 void MotorController::turnOnMotors()
 {
 #ifdef __linux__
-    digitalWrite(SETTINGS::MOTOR::PIN::STANDBY, HIGH);
+    digitalWrite(ConfigService::get().motor_pins.stby, HIGH);
 #endif
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -128,9 +128,7 @@ void MotorController::backtrack(const std::chrono::milliseconds duration)
         auto [left, right] = it->speed;
         pwmDrive(-left, -right);
 
-        const auto& config_ = ConfigService::get();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(config_.timing.robot_loop_interval_ms));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ConfigService::get().timing.robot_loop_interval_ms));
     }
 }
 
@@ -140,16 +138,18 @@ void MotorController::pwmDrive(const double left, const double right)
     const int pwmLeft = static_cast<int>(std::abs(left));
     const int pwmRight = static_cast<int>(std::abs(right));
 
+    const auto& config_= ConfigService::get().motor_pins;
+
     // LEFT motor direction
-    digitalWrite(SETTINGS::MOTOR::PIN::IN1_LEFT, left >= 0 ? LOW : HIGH);
-    digitalWrite(SETTINGS::MOTOR::PIN::IN2_LEFT, left >= 0 ? HIGH : LOW);
+    digitalWrite(config_.ai1, left >= 0 ? LOW : HIGH);
+    digitalWrite(config_.ai2, left >= 0 ? HIGH : LOW);
 
     // RIGHT motor direction
-    digitalWrite(SETTINGS::MOTOR::PIN::IN1_RIGHT, right >= 0 ? LOW : HIGH);
-    digitalWrite(SETTINGS::MOTOR::PIN::IN2_RIGHT, right >= 0 ? HIGH : LOW);
+    digitalWrite(config_.bi1, right >= 0 ? LOW : HIGH);
+    digitalWrite(config_.bi2, right >= 0 ? HIGH : LOW);
 
     // Speed
-    softPwmWrite(SETTINGS::MOTOR::PIN::EN_LEFT, pwmLeft);
-    softPwmWrite(SETTINGS::MOTOR::PIN::EN_RIGHT, pwmRight);
+    softPwmWrite(config_.pwma_l, pwmLeft);
+    softPwmWrite(config_.pwmb_r, pwmRight);
 #endif
 }

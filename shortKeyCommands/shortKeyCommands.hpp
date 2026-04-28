@@ -12,7 +12,7 @@ struct Trigger;
 class shortKeyCommands {
 public:
     shortKeyCommands();
-    void bind(int key, std::function<void()> action, const std::string& actionDescriptor = "");
+    void bind(const std::string& stringKey, std::function<void()> action, const std::string& actionDescriptor = "");
     void addTrigger(int key, std::function<bool()> condition);
 
     void poll();

@@ -1,10 +1,20 @@
 {
+  "button": {
+    "active_low": true,
+    "start/stop": 12
+  },
   "discord": {
     "retry_delay_ms": 2000,
-    "webhook_url": "\"https://discord.com/api/webhooks/1461702296311169086/XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2\""
+    "webhook_url": "https://discord.com/api/webhooks/1461702296311169086/XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2"
   },
   "history": {
     "temp_duration": 2.0
+  },
+  "keys": {
+    "error_test": "e",
+    "perspective": "p",
+    "quit": "q",
+    "start": "r"
   },
   "line_control": {
     "angle_gain": 0.15,
@@ -29,6 +39,15 @@
     "min_speed": -100.0,
     "steering_count": 50
   },
+  "motor_pins": {
+    "ai1": 17,
+    "ai2": 27,
+    "bi1": 23,
+    "bi2": 24,
+    "pwma-l": 22,
+    "pwmb-r": 25,
+    "stby": 26
+  },
   "perspective": {
     "enabled": true,
     "trapezoid_bottom_width": 1.0,
@@ -45,6 +64,12 @@
     "num": 24,
     "offset_y": 0.0,
     "spacing_y": 15.0
+  },
+  "screen": {
+    "center_x": 320,
+    "center_y": 480,
+    "height": 480,
+    "width": 640
   },
   "timing": {
     "backtrack_duration_ms": 10,

@@ -1,5 +1,4 @@
 #include "controlExtractor.hpp"
-#include "settings.hpp"
 #include "PID.hpp"
 
 #include <vector>
@@ -36,7 +35,7 @@ std::vector<double> ControlExtractor::createLine(const std::vector<Vector2>& poi
     for (int y = 0; y < 480; y++)
     {
         double x = coeff.at<double>(0,0)*y*y + coeff.at<double>(1,0)*y + coeff.at<double>(2,0);
-        line[y] = std::clamp(x, 0.0, static_cast<double>(SETTINGS::SCREEN::CENTER_X*2 - 1));
+        line[y] = std::clamp(x, 0.0, static_cast<double>(ConfigService::get().screen.width - 1));
     }
 
     return line;
@@ -52,7 +51,7 @@ std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<
         return {base, base};
 
     const int H = static_cast<int>(estimatedLine.size());
-    const double centerX = SETTINGS::SCREEN::CENTER_X;
+    const double centerX = ConfigService::get().screen.center_x;
 
     // --- Gaussian weighted center ---
     const double y0    = config_.line_control.weight_center;
@@ -74,13 +73,12 @@ std::pair<double, double> ControlExtractor::createMotorVector(const std::vector<
     if (den < 1e-6)
         return {base, base};
 
-    double raw_x_star = num / den;
+    const double raw_x_star = num / den;
 
     // --- Temporal smoothing (critical) ---
-    static double last_x_star = SETTINGS::SCREEN::CENTER_X;
-    const double alpha = 0.2; // responsiveness vs stability
+    constexpr double alpha = 0.2; // responsiveness vs stability
 
-    double x_star = alpha * raw_x_star + (1.0 - alpha) * last_x_star;
+    const double x_star = alpha * raw_x_star + (1.0 - alpha) * last_x_star;
     last_x_star = x_star;
 
     // --- NORMALIZED error [-1, 1] ---

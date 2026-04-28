@@ -1,7 +1,6 @@
 #include "shortKeyCommands.hpp"
 
 #include "config.hpp"
-#include "../settings.hpp"
 #include "../constructs.hpp"
 
 #ifdef _WIN32
@@ -24,12 +23,14 @@ shortKeyCommands::shortKeyCommands()
 #endif
 }
 
-void shortKeyCommands::bind(const int key, std::function<void()> action, const std::string& actionDescriptor)
+void shortKeyCommands::bind(const std::string& stringKey, std::function<void()> action, const std::string& actionDescriptor)
 {
     const auto& config = ConfigService::get();
 
+    const char key = stringKey[0];
+
     keyBindings_[tolower(key)] = std::move(action);
-    const char c = toupper(static_cast<char>(key));
+    const char c = toupper(key);
 
     if (config.modules.debug)
     {

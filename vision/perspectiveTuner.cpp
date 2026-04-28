@@ -1,7 +1,6 @@
 #include "perspectiveTuner.hpp"
 #include "vision.hpp"
 #include "../config.hpp"
-#include "../settings.hpp"
 #include "../external/json.hpp"
 
 #include <fstream>
@@ -84,7 +83,7 @@ void PerspectiveTuner::open(Vision& vision)
         if (const int key = cv::waitKey(30) & 0xFF; key == 13) // ENTER — save and exit
         {
             saveToConfig(live);
-            ConfigService::init(SETTINGS::CONFIG_PATH); // reload so the rest of the program sees it
+            ConfigService::init("../config.json"); // reload so the rest of the program sees it
             std::cout << "[Tuner] Saved. Reloaded config.\n";
             break;
         }
@@ -164,7 +163,7 @@ cv::Mat PerspectiveTuner::computeWarp(const cv::Mat& frame, const Config::Perspe
 
 void PerspectiveTuner::saveToConfig(const Config::Perspective& cfg)
 {
-    std::ifstream in(SETTINGS::CONFIG_PATH);
+    std::ifstream in("../config.json");
     nlohmann::json j;
     in >> j;
     in.close();
@@ -174,6 +173,6 @@ void PerspectiveTuner::saveToConfig(const Config::Perspective& cfg)
     j["perspective"]["trapezoid_top_width"] = cfg.trapezoid_top_width;
     j["perspective"]["trapezoid_bottom_width"] = cfg.trapezoid_bottom_width;
 
-    std::ofstream out(SETTINGS::CONFIG_PATH);
+    std::ofstream out("../config.json");
     out << j.dump(2);
 }
