@@ -18,9 +18,8 @@ static void noopCallback(int, void*)
 {
 }
 
-void PerspectiveTuner::open(Vision& vision, std::string config_path)
+void PerspectiveTuner::open(Vision& vision)
 {
-    config_path_ = config_path;
     const auto& cfg = ConfigService::get().perspective;
 
     // Initialise slider positions from current config
@@ -84,7 +83,7 @@ void PerspectiveTuner::open(Vision& vision, std::string config_path)
         if (const int key = cv::waitKey(30) & 0xFF; key == 13) // ENTER — save and exit
         {
             saveToConfig(live);
-            ConfigService::init(config_path); // reload so the rest of the program sees it
+            ConfigService::reload(); // reload so the rest of the program sees it
             std::cout << "[Tuner] Saved. Reloaded config.\n";
             break;
         }
@@ -164,7 +163,7 @@ cv::Mat PerspectiveTuner::computeWarp(const cv::Mat& frame, const Config::Perspe
 
 void PerspectiveTuner::saveToConfig(const Config::Perspective& cfg)
 {
-    std::ifstream in(config_path_);
+    std::ifstream in(ConfigService::path());
     nlohmann::json j;
     in >> j;
     in.close();
@@ -174,6 +173,6 @@ void PerspectiveTuner::saveToConfig(const Config::Perspective& cfg)
     j["perspective"]["trapezoid_top_width"] = cfg.trapezoid_top_width;
     j["perspective"]["trapezoid_bottom_width"] = cfg.trapezoid_bottom_width;
 
-    std::ofstream out(config_path_);
+    std::ofstream out(ConfigService::path());
     out << j.dump(2);
 }

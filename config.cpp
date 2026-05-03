@@ -6,13 +6,23 @@
 
 using json = nlohmann::json;
 
+std::string ConfigService::path_;
 Config ConfigService::config_;
 
 void ConfigService::init(const std::string& path)
 {
-    std::ifstream file(path);
+    path_ = path;
+    reload();
+}
+
+void ConfigService::reload()
+{
+    if (path_.empty())
+        throw std::runtime_error("ConfigService::reload called before init");
+
+    std::ifstream file(path_);
     if (!file.is_open())
-        throw std::runtime_error("Failed to open config file");
+        throw std::runtime_error("Failed to open config file: " + path_);
 
     json j;
     file >> j;
@@ -62,7 +72,7 @@ void ConfigService::init(const std::string& path)
     config_.motor_pins.bi1 = j["motor_pins"]["bi1"];
     config_.motor_pins.bi2 = j["motor_pins"]["bi2"];
     config_.motor_pins.pwma_l = j["motor_pins"]["pwmA-l"];
-    config_.motor_pins.pwmb_r = j["motor_pins"]["pwmb-r"];
+    config_.motor_pins.pwmb_r = j["motor_pins"]["pwmB-r"];
     config_.motor_pins.stby = j["motor_pins"]["stby"];
 
     // --- Perspective ---
@@ -114,9 +124,4 @@ void ConfigService::init(const std::string& path)
         {"5", &config_.modules.mirroring, "Mirroring"},
         {"6", &config_.modules.steering_counter, "Steering Counter"}
     };
-}
-
-Config& ConfigService::get()
-{
-    return config_;
 }

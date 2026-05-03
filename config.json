@@ -44,8 +44,8 @@
     "ai2": 27,
     "bi1": 23,
     "bi2": 24,
-    "pwma-l": 22,
-    "pwmb-r": 25,
+    "pwmA-l": 22,
+    "pwmB-r": 25,
     "stby": 26
   },
   "perspective": {

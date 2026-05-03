@@ -24,8 +24,20 @@ const std::string config_path = "../config.json";
 
 int main()
 {
-    ConfigService::init(config_path);
-    DiscordMessenger::init(DiscordConfig::loadDiscordConfig(config_path));
+    try
+    {
+        ConfigService::init(config_path);
+        DiscordMessenger::init(DiscordConfig::loadDiscordConfig(config_path));
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Initiation failed: " << e.what() << std::endl;
+        DiscordMessenger::sendMessageToDiscord(std::string("Initiation failed: ") + e.what(), MessageType::ERROR);
+
+        waitForUserIfInteractive();
+
+        std::exit(EXIT_FAILURE);
+    }
 
     try
     {
@@ -81,7 +93,7 @@ int main()
 
         keys->bind(config.keys.perspective, [&loop]
         {
-            PerspectiveTuner::open(*loop.getVision(), config_path);
+            PerspectiveTuner::open(*loop.getVision());
         }, "Perspective tuner");
 
         keys->bind(config.keys.error_test, []
