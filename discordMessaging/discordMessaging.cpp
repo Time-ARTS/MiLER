@@ -21,17 +21,12 @@
 void DiscordMessenger::init(const DiscordConfig& cfg)
 {
     config_ = cfg;
-
-#ifdef _WIN32
     curl_global_init(CURL_GLOBAL_DEFAULT);
-#endif
 }
 
 void DiscordMessenger::shutdown()
 {
-#ifdef _WIN32
     curl_global_cleanup();
-#endif
 }
 
 void DiscordMessenger::sendMessageToDiscord(const std::string& text, const MessageType& type,

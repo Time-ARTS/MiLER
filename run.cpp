@@ -20,10 +20,12 @@
 #include <softPwm.h>
 #endif
 
+const std::string config_path = "../config.json";
+
 int main()
 {
-    ConfigService::init("..//config.json");
-    DiscordMessenger::init(DiscordConfig::loadDiscordConfig("..//config.json"));
+    ConfigService::init(config_path);
+    DiscordMessenger::init(DiscordConfig::loadDiscordConfig(config_path));
 
     try
     {
@@ -79,15 +81,15 @@ int main()
 
         keys->bind(config.keys.perspective, [&loop]
         {
-            PerspectiveTuner::open(*loop.getVision());
+            PerspectiveTuner::open(*loop.getVision(), config_path);
         }, "Perspective tuner");
 
-        keys->bind(config.keys.error_test, [&loop]
+        keys->bind(config.keys.error_test, []
         {
             throw std::runtime_error("Error catch test");
         }, "Error catch test");
 
-        keys->bind(config.keys.quit, [&loop]
+        keys->bind(config.keys.quit, []
         {
             DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
 

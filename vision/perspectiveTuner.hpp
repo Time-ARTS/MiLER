@@ -10,12 +10,14 @@ class Vision;
 class PerspectiveTuner
 {
 public:
-    static void open(Vision& vision);
+    static void open(Vision& vision, std::string config_path);
 
 private:
     static void drawOverlay(cv::Mat& frame, const Config::Perspective& cfg);
     static cv::Mat computeWarp(const cv::Mat& frame, const Config::Perspective& cfg);
     static void saveToConfig(const Config::Perspective& cfg);
+
+    static std::string config_path_;
 };
 
 #endif

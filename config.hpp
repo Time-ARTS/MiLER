@@ -15,6 +15,7 @@ public:
 
 private:
     static Config config_;
+    const std::string& config_path = "";
 };
 
 #endif //MILER_CONFIG_HPP
