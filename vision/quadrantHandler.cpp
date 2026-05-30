@@ -70,8 +70,8 @@ std::vector<Vector2> ImageProcessor::processQuadrants(const cv::Mat& frame)
 
     for (auto& q : quadrants_)
     {
-        Vector2 midpoint = q.self(frame);
-        lineMidpoints_.push_back(midpoint);
+        if (Vector2 midpoint = q.self(frame); midpoint != falsePoint_)
+            lineMidpoints_.push_back(midpoint);
     }
 
     double timestamp = std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();

@@ -123,6 +123,8 @@ void Loop::lineTest()
     {
         auto points = vision_->processFrame();
         lineDetected_ = std::ranges::any_of(points, [](const Vector2& p) { return p.x >= 0 && p.y >= 0; });
+
+        const auto& config = ConfigService::get();
         const auto now = std::chrono::steady_clock::now();
 
         if (lineDetected_)
@@ -131,12 +133,18 @@ void Loop::lineTest()
             return;
         }
 
+        if (std::chrono::milliseconds(config.timing.backtrack_wait_time_ms) > lastLineTime_ - now)
+        {
+            DiscordMessenger::sendMessageToDiscord(
+            "Line lost. Waiting in case of error...",
+            MessageType::INFO
+            );
+        }
+
         DiscordMessenger::sendMessageToDiscord(
             "Line lost. Attempting incremental backtrack recovery...",
             MessageType::WARNING
         );
-
-        const auto& config = ConfigService::get();
 
         const auto maxRecoveryTime = std::chrono::seconds(config.timing.max_wait_time_s);
         const auto step = std::chrono::milliseconds(config.timing.backtrack_duration_ms);

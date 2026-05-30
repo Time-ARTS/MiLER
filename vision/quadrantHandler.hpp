@@ -32,6 +32,7 @@ public:
     const std::vector<std::pair<float, std::vector<Vector2>>>& getFullHistory() const { return fullHistory_; }
 
 private:
+    const Vector2 falsePoint_ = Vector2(-1, -1);
     std::vector<Quadrant> quadrants_;
     std::vector<Vector2> lineMidpoints_;
 

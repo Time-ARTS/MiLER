@@ -73,6 +73,7 @@
   },
   "timing": {
     "backtrack_duration_ms": 10,
+    "backtrack_wait_time_ms": 200,
     "button_debounce_ms": 500,
     "button_poll_interval_ms": 50,
     "max_system_runtime_min": 5,

@@ -100,6 +100,7 @@ void ConfigService::reload()
 
     // --- Timing ---
     config_.timing.backtrack_duration_ms = j["timing"]["backtrack_duration_ms"];
+    config_.timing.backtrack_wait_time_ms = j["timing"]["backtrack_wait_time_ms"];
     config_.timing.button_debounce_ms = j["timing"]["button_debounce_ms"];
     config_.timing.button_poll_interval_ms = j["timing"]["button_poll_interval_ms"];
     config_.timing.max_system_runtime_min = j["timing"]["max_system_runtime_min"];

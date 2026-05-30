@@ -39,8 +39,9 @@ void shortKeyCommands::bind(const std::string& stringKey, std::function<void()> 
     }
 }
 
-void shortKeyCommands::addTrigger(const int key, std::function<bool()> condition)
+void shortKeyCommands::addTrigger(const std::string& stringKey, std::function<bool()> condition)
 {
+    const char key = stringKey[0];
     triggers_.push_back({ std::move(condition), tolower(key) });
 }
 

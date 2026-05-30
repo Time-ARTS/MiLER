@@ -13,7 +13,7 @@ class shortKeyCommands {
 public:
     shortKeyCommands();
     void bind(const std::string& stringKey, std::function<void()> action, const std::string& actionDescriptor = "");
-    void addTrigger(int key, std::function<bool()> condition);
+    void addTrigger(const std::string& stringKey, std::function<bool()> condition);
 
     void poll();
     void flushBindingReport();

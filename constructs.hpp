@@ -26,6 +26,9 @@ struct Vector2
 
     Vector2 operator+(const Vector2& other) const { return {x + other.x, y + other.y}; }
     Vector2 operator-(const Vector2& other) const { return {x - other.x, y - other.y}; }
+
+    bool operator==(const Vector2& vector2) const { return x == vector2.x && y == vector2.y; }
+    bool operator!=(const Vector2& vector2) const { return x != vector2.x && y != vector2.y; }
 };
 
 struct ToggleBinding
@@ -146,6 +149,7 @@ struct Config
     struct Timing
     {
         int backtrack_duration_ms,
+            backtrack_wait_time_ms,
             button_debounce_ms,
             button_poll_interval_ms,
             max_system_runtime_min,
