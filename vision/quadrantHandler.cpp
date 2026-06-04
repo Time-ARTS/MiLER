@@ -6,7 +6,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "config.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
 Vector2 Quadrant::self(const cv::Mat& frame) const
 {
@@ -31,8 +30,8 @@ Vector2 Quadrant::self(const cv::Mat& frame) const
     const cv::Moments m = cv::moments(*largest);
     if (m.m00 == 0) return Vector2(-1, -1);
 
-    const float cx = static_cast<float>(m.m10 / m.m00);
-    const float cy = static_cast<float>(m.m01 / m.m00);
+    const auto cx = static_cast<float>(m.m10 / m.m00);
+    const auto cy = static_cast<float>(m.m01 / m.m00);
 
     // Offset by ROI to get full-frame coordinates
     return Vector2(roi.x + cx, roi.y + cy);
@@ -86,7 +85,5 @@ std::vector<Vector2> ImageProcessor::processQuadrants(const cv::Mat& frame)
         tempHistory_.pop_front();
     }
 
-    if (config.modules.debug)
-        DiscordMessenger::sendMessageToDiscord("Quadrants solved", MessageType::SUCCESS);
     return lineMidpoints_;
 }

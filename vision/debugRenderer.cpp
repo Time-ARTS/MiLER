@@ -2,17 +2,14 @@
 
 #include "config.hpp"
 #include "quadrantHandler.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
 void DebugRenderer::openWindow()
 {
-    DiscordMessenger::sendMessageToDiscord("Opening debugWindow: MILLER SEARCH VIEW", MessageType::DEBUG);
     cv::namedWindow("MILLER SEARCH VIEW", cv::WINDOW_NORMAL);
 }
 
 void DebugRenderer::closeWindow()
 {
-    DiscordMessenger::sendMessageToDiscord("Closing debugWindow: MILLER SEARCH VIEW", MessageType::DEBUG);
     cv::destroyWindow("MILLER SEARCH VIEW");
 }
 
@@ -46,16 +43,13 @@ void DebugRenderer::render(const cv::Mat& frame, const std::vector<Quadrant>& qu
     // Draw motor-line
     renderMotorLine(botView, static_cast<float>(leftSpeed), static_cast<float>(rightSpeed));
 
-    if (const auto& config = ConfigService::get(); config.modules.debug)
-        DiscordMessenger::sendMessageToDiscord("Window successfully rendered: MILLER DEBUG VIEW", MessageType::DEBUG);
-
     cv::imshow("MILLER DEBUG VIEW", botView);
     cv::waitKey(1);
 }
 
 void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, const float right)
 {
-    const float base = static_cast<float>(ConfigService::get().motor.default_speed);
+    const auto base = static_cast<float>(ConfigService::get().motor.default_speed);
     const float diff = (right - left) / base;
 
     const auto& config_ = ConfigService::get().screen;
@@ -68,7 +62,7 @@ void DebugRenderer::renderMotorLine(const cv::Mat& frame, const float left, cons
 
     // Map diff [-1, 1] -> angle [-90, 90] degrees, offset by 90 so 0 = straight up
     // diff=0 -> 90deg (up), diff=1 -> 0deg (right), diff=-1 -> 180deg (left)
-    const float angleDeg = 90.0f - (diff * 90.0f);
+    const float angleDeg = 90.0f - diff * 90.0f;
     const float angleRad = angleDeg * CV_PI / 180.0f;
 
     const cv::Point lineEnd = {

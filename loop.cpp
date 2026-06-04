@@ -1,6 +1,5 @@
 #include "loop.hpp"
 #include "shortKeyCommands/shortKeyCommands.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
 #include "vision/vision.hpp"
 #include "motorControl/controlExtractor.hpp"
@@ -47,35 +46,15 @@ Loop::Loop()
 
 void Loop::run(const std::atomic<bool>& running)
 {
-    const auto& config = ConfigService::get();
-
-    DiscordMessenger::sendMessageToDiscord("Loop started.", MessageType::INFO);
-
     while (true)
     {
-        if (config.modules.debug)
-            DiscordMessenger::sendMessageToDiscord("LineTest activated", MessageType::INFO);
-
         lineTest();
-
-        if (config.modules.debug)
-        {
-            DiscordMessenger::sendMessageToDiscord(
-                lineDetected_
-                    ? "LineTest computed successfully, line detected. **CONTINUING**"
-                    : "LineTest computed successfully, line not found. **EXITING**"
-                , lineDetected_ ? MessageType::SUCCESS : MessageType::WARNING);
-        }
 
         if (!lineDetected_ || !running)
         {
-            DiscordMessenger::sendMessageToDiscord("Loop exiting to main control.", MessageType::WARNING);
             MotorController::turnOffMotors();
             break;
         }
-
-        if (config.modules.debug)
-            DiscordMessenger::sendMessageToDiscord("Checking for activated keys", MessageType::INFO);
 
         shortKeyCommands_->poll();
 
@@ -87,32 +66,18 @@ void Loop::loop() const
 {
     const auto& config = ConfigService::get();
 
-    if (config.modules.debug)
-        DiscordMessenger::sendMessageToDiscord("Loop itteration started.", MessageType::INFO);
-
     const auto points = vision_->processFrame();
-
-    if (config.modules.debug)
-        DiscordMessenger::sendMessageToDiscord("Points processed, continuing...", MessageType::SUCCESS);
 
     const auto line = controlExtractor_->createLine(points);
     auto [leftMotorSpeed, rightMotorSpeed] = controlExtractor_->createMotorVector(line);
 
-    if (config.modules.debug)
-        DiscordMessenger::sendMessageToDiscord("Motor-controlls accuired, continuing...", MessageType::SUCCESS);
-
     if (config.modules.mirroring)
     {
-        const cv::Mat frame = vision_->getCurrentFrame();
         const auto quadrants = imageProcessor_->getQuadrants();
-        DebugRenderer::render(frame, quadrants, points, line, leftMotorSpeed, rightMotorSpeed);
+        DebugRenderer::render(currentFrame_, quadrants, points, line, leftMotorSpeed, rightMotorSpeed);
     }
 
     motorController_->drive(leftMotorSpeed, rightMotorSpeed);
-
-    DiscordMessenger::sendMessageToDiscord(
-        "Speed -> Left: " + std::to_string(leftMotorSpeed) + "   - Right: " + std::to_string(rightMotorSpeed),
-        MessageType::DEBUG);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(config.timing.robot_loop_interval_ms));
 }
@@ -121,8 +86,9 @@ void Loop::lineTest()
 {
     try
     {
+        currentFrame_ = vision_->getCurrentFrame();
         auto points = vision_->processFrame();
-        lineDetected_ = std::ranges::any_of(points, [](const Vector2& p) { return p.x >= 0 && p.y >= 0; });
+        lineDetected_ = !points.empty();
 
         const auto& config = ConfigService::get();
         const auto now = std::chrono::steady_clock::now();
@@ -133,18 +99,11 @@ void Loop::lineTest()
             return;
         }
 
-        if (std::chrono::milliseconds(config.timing.backtrack_wait_time_ms) > lastLineTime_ - now)
+        if (std::chrono::milliseconds(config.timing.backtrack_wait_time_ms) > now - lastLineTime_)
         {
-            DiscordMessenger::sendMessageToDiscord(
-            "Line lost. Waiting in case of error...",
-            MessageType::INFO
-            );
+            lineDetected_ = true;
+            return;
         }
-
-        DiscordMessenger::sendMessageToDiscord(
-            "Line lost. Attempting incremental backtrack recovery...",
-            MessageType::WARNING
-        );
 
         const auto maxRecoveryTime = std::chrono::seconds(config.timing.max_wait_time_s);
         const auto step = std::chrono::milliseconds(config.timing.backtrack_duration_ms);
@@ -155,25 +114,20 @@ void Loop::lineTest()
         {
             motorController_->backtrack(step);
 
+            currentFrame_ = vision_->getCurrentFrame();
             points = vision_->processFrame();
             lineDetected_ = !points.empty();
 
             if (lineDetected_)
             {
-                DiscordMessenger::sendMessageToDiscord("Line re-acquired during backtrack recovery.",
-                                                       MessageType::SUCCESS);
                 lastLineTime_ = std::chrono::steady_clock::now();
                 return;
             }
         }
-
-        DiscordMessenger::sendMessageToDiscord("Line recovery failed. Soft stopping robot.", MessageType::ERROR);
-
-        lineDetected_ = false;
     }
     catch (const std::exception& e)
     {
-        DiscordMessenger::sendMessageToDiscord(std::string("Fatal error in loop: ") + e.what(), MessageType::ERROR);
+        std::cerr << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }

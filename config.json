@@ -3,10 +3,6 @@
     "active_low": true,
     "start/stop": 12
   },
-  "discord": {
-    "retry_delay_ms": 2000,
-    "webhook_url": "https://discord.com/api/webhooks/1461702296311169086/XsXPRHTLegvDMEkyxFg5xk3tF9MWm8G-_yrDhkDkkw5oGfygZH8HfFwugaMunoYeYan2"
-  },
   "history": {
     "temp_duration": 2.0
   },
@@ -26,11 +22,9 @@
   },
   "modules": {
     "debug": false,
-    "discord": false,
     "driving": true,
     "logging": true,
     "mirroring": true,
-    "steering_counter": false,
     "vision": true
   },
   "motor": {
@@ -40,25 +34,25 @@
     "steering_count": 50
   },
   "motor_pins": {
-    "ai1": 17,
-    "ai2": 27,
-    "bi1": 23,
-    "bi2": 24,
+    "ai1": 23,
+    "ai2": 24,
+    "bi1": 27,
+    "bi2": 17,
     "pwmA-l": 22,
     "pwmB-r": 25,
     "stby": 26
   },
   "perspective": {
     "enabled": true,
-    "trapezoid_bottom_width": 1.0,
-    "trapezoid_top_width": 0.2,
+    "trapezoid_bottom_width": 0.697,
+    "trapezoid_top_width": 1.0,
     "vanishing_y": 0.0
   },
   "pid": {
     "int_limit": 0.5,
-    "kd": 0.08,
-    "ki": 0.02,
-    "kp": 0.5
+    "kd": 34.0,
+    "ki": 0.0,
+    "kp": 360
   },
   "quadrant": {
     "num": 24,
@@ -72,7 +66,7 @@
     "width": 640
   },
   "timing": {
-    "backtrack_duration_ms": 10,
+    "backtrack_duration_ms": 100,
     "backtrack_wait_time_ms": 200,
     "button_debounce_ms": 500,
     "button_poll_interval_ms": 50,

@@ -44,7 +44,7 @@ public:
     void initPerspective(int frameWidth, int frameHeight);
 
     bool detectedLine();
-    std::vector<Vector2> processFrame() const { return imageProcessor_->processQuadrants(currentFrame_); }
+    [[nodiscard]] std::vector<Vector2> processFrame() const { return imageProcessor_->processQuadrants(currentFrame_); }
 
     ~Vision() { if (cap_.isOpened()) cap_.release(); }
 

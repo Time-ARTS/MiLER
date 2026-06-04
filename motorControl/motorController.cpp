@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include "discordMessaging/discordMessaging.hpp"
-
 #include <thread>
 #include <chrono>
 
@@ -16,42 +14,40 @@
 
 bool MotorController::selfTest()
 {
-    DiscordMessenger::sendMessageToDiscord("Motor self-test started...", MessageType::INFO);
-
     try
     {
-        DiscordMessenger::sendMessageToDiscord("Turning on motors", MessageType::INFO);
+        std::cout << "Testing motors:" << std::endl;
         turnOnMotors();
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Left driving: 10", MessageType::INFO);
+        std::cout << "Motor Left driving forward" << std::endl;
         pwmDrive(10, 0); // Left forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Right driving: 10", MessageType::INFO);
+        std::cout << "Motor Right driving forward" << std::endl;
         pwmDrive(0, 10); // Right forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Both driving: 10", MessageType::INFO);
+        std::cout << "Both driving forward" << std::endl;
         pwmDrive(10, 10); // Both forward
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        DiscordMessenger::sendMessageToDiscord("Motor Both driving: -10", MessageType::INFO);
+        std::cout << "Both driving backward" << std::endl;
         pwmDrive(-10, -10); // Both reverse
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         pwmDrive(0, 0); // Stop
 
-        DiscordMessenger::sendMessageToDiscord("Truning motors off", MessageType::SUCCESS);
+        std::cout << "Truning motors off" << std::endl;
         turnOffMotors();
 
+        std::cout << "Motor self-test passed" << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        DiscordMessenger::sendMessageToDiscord("Motor self-test passed", MessageType::SUCCESS);
         return true;
     }
-    catch (...)
+    catch (const std::exception& e)
     {
-        DiscordMessenger::sendMessageToDiscord("Motor self-test FAILED", MessageType::ERROR);
+        std::cerr << e.what() << std::endl;
         return false;
     }
 }
@@ -88,7 +84,7 @@ void MotorController::drive(const double& left, const double& right)
 
     pwmDrive(left, right);
 
-    if (const auto& config_ = ConfigService::get(); config_.modules.logging && config_.modules.steering_counter)
+    if (const auto& config_ = ConfigService::get(); config_.modules.logging)
     {
         motorCommandLog_ += "Steering: LEFT - " + std::to_string(left) + " |.| RIGHT - " + std::to_string(right) +
             "\\n";
@@ -97,7 +93,6 @@ void MotorController::drive(const double& left, const double& right)
 
         if (steeringCount_ == config_.motor.steering_count)
         {
-            DiscordMessenger::sendMessageToDiscord(motorCommandLog_);
             motorCommandLog_.clear();
             steeringCount_ = 0;
         }

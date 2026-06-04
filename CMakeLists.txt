@@ -16,26 +16,6 @@ if (WIN32)
 endif ()
 find_package(OpenCV REQUIRED)
 
-# ---- CURL ----
-if (UNIX AND NOT APPLE)
-    find_package(CURL REQUIRED)
-    set(CURL_TARGET CURL::libcurl)
-    message(STATUS "Using system libcurl")
-else ()
-    message(STATUS "Fetching curl via FetchContent")
-    FetchContent_Declare(
-            curl
-            GIT_REPOSITORY https://github.com/curl/curl.git
-            GIT_TAG curl-8_7_1
-    )
-    # Ensure we build only the library, not the executable
-    set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
-    set(CURL_STATICLIB ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(curl)
-
-    set(CURL_TARGET libcurl)
-endif ()
-
 # ---- WiringPi (RPi only) ----
 if (UNIX AND NOT APPLE)
     find_library(WIRINGPI_LIB NAMES wiringPi)
@@ -53,24 +33,11 @@ add_executable(MiLER
         motorControl/PID.cpp
         motorControl/controlExtractor.cpp
         motorControl/motorController.cpp
-        discordMessaging/discordMessaging.cpp
-        discordMessaging/discordConfig.cpp
-)
-
-add_executable(networkBootIP
-        discordMessaging/networkBootIP.cpp
-        discordMessaging/networkInfo.cpp
-        discordMessaging/discordMessaging.cpp
-        discordMessaging/discordConfig.cpp
 )
 
 # ---- Include Directories ----
 target_include_directories(MiLER PRIVATE
         ${OpenCV_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}
-)
-
-target_include_directories(networkBootIP PRIVATE
         ${CMAKE_SOURCE_DIR}
 )
 
@@ -84,14 +51,7 @@ if (WIN32)
 endif ()
 
 # ---- Link Libraries ----
-target_link_libraries(MiLER
-        ${OpenCV_LIBS}
-        ${CURL_TARGET}
-)
-
-target_link_libraries(networkBootIP
-        ${CURL_TARGET}
-)
+target_link_libraries(MiLER ${OpenCV_LIBS})
 
 # ---- WiringPi ----
 if (WIRINGPI_LIB)

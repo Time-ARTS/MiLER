@@ -17,7 +17,7 @@ struct Quadrant
     void setROI(const int x, const int y, const int width, const int height) { roi = cv::Rect(x, y, width, height); }
     [[nodiscard]] Vector2 self(const cv::Mat& frame) const;
 
-    cv::Rect getROI() const { return roi; }
+    [[nodiscard]] cv::Rect getROI() const { return roi; }
 };
 
 class ImageProcessor
@@ -26,10 +26,10 @@ public:
     void quadrantize(const std::shared_ptr<Vision>& v);
     std::vector<Vector2> processQuadrants(const cv::Mat& frame);
 
-    const std::vector<Quadrant>& getQuadrants() const { return quadrants_; }
-    const std::vector<Vector2>& getLinePoints() const { return lineMidpoints_; }
-    const std::deque<std::pair<float, std::vector<Vector2>>>& getTempHistory() const { return tempHistory_; }
-    const std::vector<std::pair<float, std::vector<Vector2>>>& getFullHistory() const { return fullHistory_; }
+    [[nodiscard]] const std::vector<Quadrant>& getQuadrants() const { return quadrants_; }
+    [[nodiscard]] const std::vector<Vector2>& getLinePoints() const { return lineMidpoints_; }
+    [[nodiscard]] const std::deque<std::pair<float, std::vector<Vector2>>>& getTempHistory() const { return tempHistory_; }
+    [[nodiscard]] const std::vector<std::pair<float, std::vector<Vector2>>>& getFullHistory() const { return fullHistory_; }
 
 private:
     const Vector2 falsePoint_ = Vector2(-1, -1);

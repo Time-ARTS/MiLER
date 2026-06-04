@@ -4,8 +4,10 @@
 #pragma once
 #include <chrono>
 #include <memory>
+#include <opencv2/core/mat.hpp>
 
 #include "motorControl/motorController.hpp"
+#include "vision/vision.hpp"
 
 class PID;
 class ControlExtractor;
@@ -21,7 +23,7 @@ public:
 
     void run(const std::atomic<bool>& running);
 
-    void motorTest() const { motorController_->selfTest(); }
+    static void motorTest() { MotorController::selfTest(); }
 
     [[nodiscard]] std::shared_ptr<ControlExtractor> getControlExtractor() const { return controlExtractor_; }
     [[nodiscard]] std::shared_ptr<ImageProcessor> getImageProcessor() const { return imageProcessor_; }
@@ -36,6 +38,8 @@ private:
     const std::shared_ptr<MotorController> motorController_;
     const std::shared_ptr<Vision> vision_;
     const std::shared_ptr<shortKeyCommands> shortKeyCommands_;
+
+    cv::Mat currentFrame_;
 
     bool lineDetected_;
     std::chrono::time_point<std::chrono::steady_clock> lastLineTime_ = std::chrono::steady_clock::now();

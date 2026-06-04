@@ -5,7 +5,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "config.hpp"
-#include "discordMessaging/discordMessaging.hpp"
 
 Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
     : imageProcessor_(imageProcessor)
@@ -27,16 +26,6 @@ Vision::Vision(const std::shared_ptr<ImageProcessor>& imageProcessor)
 
     if (perspectiveMatrix_.empty())
         throw std::runtime_error("Perspective matrix is empty.");
-
-    if (config.modules.debug)
-    {
-        std::string cameraInfo = "Camera opened successfully: index " + CAMERA::CAMERA_INFO;
-
-        const int backend = cap_.get(cv::CAP_PROP_BACKEND);
-        cameraInfo += " | backend: " + std::to_string(backend);
-
-        DiscordMessenger::sendMessageToDiscord(cameraInfo, MessageType::INFO);
-    }
 }
 
 cv::Mat Vision::getRawFrame()
@@ -76,8 +65,8 @@ void Vision::initPerspective(const int frameWidth, const int frameHeight)
 {
     const auto& cfg = ConfigService::get().perspective;
 
-    const float W = static_cast<float>(frameWidth);
-    const float H = static_cast<float>(frameHeight);
+    const auto W = static_cast<float>(frameWidth);
+    const auto H = static_cast<float>(frameHeight);
 
     const float vy = cfg.vanishing_y * H;
     const float topHalf = cfg.trapezoid_top_width * W * 0.5f;

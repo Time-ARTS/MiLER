@@ -31,9 +31,6 @@ void ConfigService::reload()
     config_.button.active_low = j["button"]["active_low"];
     config_.button.start_stop = j["button"]["start/stop"];
 
-    // --- Discord ---
-    // (loaded separately via DiscordConfig::loadDiscordConfig, nothing here)
-
     // --- History ---
     config_.history.temp_duration = j["history"]["temp_duration"];
 
@@ -53,11 +50,9 @@ void ConfigService::reload()
 
     // --- Modules ---
     config_.modules.debug = j["modules"]["debug"];
-    config_.modules.discord = j["modules"]["discord"];
     config_.modules.driving = j["modules"]["driving"];
     config_.modules.logging = j["modules"]["logging"];
     config_.modules.mirroring = j["modules"]["mirroring"];
-    config_.modules.steering_counter = j["modules"]["steering_counter"];
     config_.modules.vision = j["modules"]["vision"];
 
     // --- Motor ---
@@ -119,10 +114,8 @@ void ConfigService::reload()
     config_.modules.toggleTable = {
         {"0", &config_.modules.driving, "Driving"},
         {"1", &config_.modules.vision, "Vision"},
-        {"2", &config_.modules.discord, "Discord"},
-        {"3", &config_.modules.logging, "Logging"},
-        {"4", &config_.modules.debug, "Debug"},
-        {"5", &config_.modules.mirroring, "Mirroring"},
-        {"6", &config_.modules.steering_counter, "Steering Counter"}
+        {"2", &config_.modules.logging, "Logging"},
+        {"3", &config_.modules.debug, "Debug"},
+        {"4", &config_.modules.mirroring, "Mirroring"},
     };
 }

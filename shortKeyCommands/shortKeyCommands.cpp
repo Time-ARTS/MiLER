@@ -1,6 +1,5 @@
 #include "shortKeyCommands.hpp"
 
-#include "config.hpp"
 #include "../constructs.hpp"
 
 #ifdef _WIN32
@@ -13,9 +12,6 @@
 #include <fcntl.h>
 #endif
 
-
-#include "../discordMessaging/discordMessaging.hpp"
-
 shortKeyCommands::shortKeyCommands()
 {
 #ifdef __linux__
@@ -23,20 +19,11 @@ shortKeyCommands::shortKeyCommands()
 #endif
 }
 
-void shortKeyCommands::bind(const std::string& stringKey, std::function<void()> action, const std::string& actionDescriptor)
+void shortKeyCommands::bind(const std::string& stringKey, std::function<void()> action)
 {
-    const auto& config = ConfigService::get();
-
     const char key = stringKey[0];
 
     keyBindings_[tolower(key)] = std::move(action);
-    const char c = toupper(key);
-
-    if (config.modules.debug)
-    {
-        const std::string function = actionDescriptor.empty() ? "none" : actionDescriptor;
-        bindingReport_ += std::string("**") + c + "** to function - **" + function + "**\\n";
-    }
 }
 
 void shortKeyCommands::addTrigger(const std::string& stringKey, std::function<bool()> condition)
@@ -68,27 +55,10 @@ void shortKeyCommands::poll()
     }
 }
 
-void shortKeyCommands::flushBindingReport()
-{
-    const auto& config = ConfigService::get();
-
-    if (!config.modules.debug || bindingReport_.empty())
-        return;
-
-    const std::string msg = "## Bound keys:\\n" + bindingReport_;
-
-    DiscordMessenger::sendMessageToDiscord(msg, MessageType::INFO);
-    bindingReport_.clear();
-}
-
 void shortKeyCommands::trigger(const int key)
 {
     if (const auto it = keyBindings_.find(tolower(key)); it != keyBindings_.end())
-    {
-        const char c = toupper(static_cast<char>(key));
-        DiscordMessenger::sendMessageToDiscord(std::string("Key **") + c + "** triggered");
         it->second();
-    }
 }
 
 #ifdef __linux__

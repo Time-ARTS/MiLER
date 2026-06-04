@@ -19,17 +19,18 @@ constexpr double PI = 3.141592653589793238463;
 
 struct Vector2
 {
-    float x;
-    float y;
+    float x = 0.f;
+    float y = 0.f;
 
-    Vector2 operator-() const { return {-x, -y}; }
+    bool operator==(const Vector2& o) const { return x == o.x && y == o.y; }
+    bool operator!=(const Vector2& o) const { return !(*this == o); }
 
-    Vector2 operator+(const Vector2& other) const { return {x + other.x, y + other.y}; }
-    Vector2 operator-(const Vector2& other) const { return {x - other.x, y - other.y}; }
-
-    bool operator==(const Vector2& vector2) const { return x == vector2.x && y == vector2.y; }
-    bool operator!=(const Vector2& vector2) const { return x != vector2.x && y != vector2.y; }
+    Vector2 operator+(const Vector2& o) const { return {x + o.x, y + o.y}; }
+    Vector2 operator-(const Vector2& o) const { return {x - o.x, y - o.y}; }
+    Vector2 operator-()                 const { return {-x, -y}; }
 };
+
+static constexpr Vector2 INVALID_POINT = { -1.f, -1.f };
 
 struct ToggleBinding
 {
@@ -45,13 +46,13 @@ struct Config
     {
         int start_stop;
         bool active_low;
-    } button;
+    } button{};
 
     // --- History ---
     struct History
     {
         float temp_duration;
-    } history;
+    } history{};
 
     // --- Keys ---
     struct keys
@@ -72,7 +73,7 @@ struct Config
                offset_gain,
                weight_center,
                weight_sigma;
-    } line_control;
+    } line_control{};
 
     // --- Modules ---
     struct Modules
@@ -80,11 +81,9 @@ struct Config
         std::vector<ToggleBinding> toggleTable;
 
         bool debug,
-             discord,
              driving,
              logging,
              mirroring,
-             steering_counter,
              vision;
     } modules;
 
@@ -96,7 +95,7 @@ struct Config
                min_speed;
 
         int steering_count;
-    } motor;
+    } motor{};
 
     // --- Motor pins ---
     struct MotorPins
@@ -108,7 +107,7 @@ struct Config
             pwma_l,
             pwmb_r,
             stby;
-    } motor_pins;
+    } motor_pins{};
 
     // --- Perspective ---
     struct Perspective
@@ -117,7 +116,7 @@ struct Config
         double trapezoid_bottom_width;
         double trapezoid_top_width;
         double vanishing_y;
-    } perspective;
+    } perspective{};
 
     // --- PID ---
     struct PID
@@ -126,7 +125,7 @@ struct Config
                ki,
                kd,
                int_limit;
-    } pid;
+    } pid{};
 
     // --- Quadrant ---
     struct Quadrant
@@ -134,7 +133,7 @@ struct Config
         int num;
         float offset_y,
               spacing_y;
-    } quadrant;
+    } quadrant{};
 
     // --- Screen ---
     struct Screen
@@ -143,7 +142,7 @@ struct Config
             height,
             center_x,
             center_y;
-    } screen;
+    } screen{};
 
     // --- Timing ---
     struct Timing
@@ -156,7 +155,7 @@ struct Config
             max_wait_time_s,
             robot_loop_interval_ms,
             sleep_time_s;
-    } timing;
+    } timing{};
 
     // --- Vision ---
     struct Vision
@@ -167,7 +166,7 @@ struct Config
 
         double color_threshold,
                min_line_area;
-    } vision;
+    } vision{};
 };
 
 struct Trigger
@@ -180,15 +179,6 @@ struct MotorCommandEntry
 {
     std::pair<double, double> speed;
     std::chrono::steady_clock::time_point timestamp;
-};
-
-enum class MessageType
-{
-    INFO,
-    WARNING,
-    ERROR,
-    DEBUG,
-    SUCCESS
 };
 
 inline void waitForUserIfInteractive()

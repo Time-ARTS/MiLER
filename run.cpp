@@ -5,9 +5,6 @@
 #include "vision/vision.hpp"
 #include "vision/debugRenderer.hpp"
 
-#include "discordMessaging/discordMessaging.hpp"
-#include "discordMessaging/discordConfig.hpp"
-
 #include <thread>
 #include <chrono>
 #include <atomic>
@@ -27,15 +24,12 @@ int main()
     try
     {
         ConfigService::init(config_path);
-        DiscordMessenger::init(DiscordConfig::loadDiscordConfig(config_path));
     }
     catch (const std::exception& e)
     {
         std::cerr << "Initiation failed: " << e.what() << std::endl;
-        DiscordMessenger::sendMessageToDiscord(std::string("Initiation failed: ") + e.what(), MessageType::ERROR);
 
         waitForUserIfInteractive();
-
         std::exit(EXIT_FAILURE);
     }
 
@@ -66,9 +60,10 @@ int main()
         pinMode(config.motor_pins.bi2, OUTPUT);
 
         if (softPwmCreate(config.motor_pins.pwma_l, 0, 255) != 0)
-            DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_LEFT", MessageType::ERROR);
+            std::cerr << "Failed to create PWM on EN_LEFT\n";
+
         if (softPwmCreate(config.motor_pins.pwmb_r, 0, 255) != 0)
-            DiscordMessenger::sendMessageToDiscord("Failed to create PWM on EN_RIGHT", MessageType::ERROR);
+            std::cerr << "Failed to create PWM on EN_RIGHT\n";
 
         loop.motorTest();
 #endif
@@ -82,55 +77,41 @@ int main()
         {
             running = !running;
 
-            DiscordMessenger::sendMessageToDiscord(
-                running ? "Robot started. Searching for line..." : "Robot stopped.",
-                MessageType::SUCCESS
-            );
-
             lastActivity = std::chrono::steady_clock::now();
             std::this_thread::sleep_for(std::chrono::milliseconds(config.timing.button_debounce_ms));
-        }, "Start");
+        });
 
         keys->bind(config.keys.perspective, [&loop]
         {
             PerspectiveTuner::open(*loop.getVision());
-        }, "Perspective tuner");
+        });
 
         keys->bind(config.keys.error_test, []
         {
             throw std::runtime_error("Error catch test");
-        }, "Error catch test");
+        });
 
         keys->bind(config.keys.quit, []
         {
-            DiscordMessenger::sendMessageToDiscord("Forced shutdown.", MessageType::WARNING);
-
             MotorController::turnOffMotors();
 
             std::exit(EXIT_SUCCESS);
-        }, "Quit");
+        });
 
         for (const auto& [key_, flag_, name_] : config.modules.toggleTable)
         {
-            keys->bind(key_, [flag = flag_, name = name_]
+            keys->bind(key_, [flag = flag_]
             {
                 *flag = !*flag;
-
-                DiscordMessenger::sendMessageToDiscord(std::string(name) + ": " + (*flag ? "ON" : "OFF"));
-            }, name_);
+            });
         }
 
 #ifdef __linux__
         keys->addTrigger(config.keys.start, [&]
         {
-            return (digitalRead(config.button.start_stop) == (config_.button.active_low ? LOW : HIGH));
+            return (digitalRead(config.button.start_stop) == (config.button.active_low ? LOW : HIGH));
         });
 #endif
-
-        keys->flushBindingReport();
-
-        DiscordMessenger::sendMessageToDiscord("System ready. Waiting for start.", MessageType::INFO);
-
         while (true)
         {
             keys->poll();
@@ -167,7 +148,6 @@ int main()
             {
                 lastActivity = std::chrono::steady_clock::now();
 
-                DiscordMessenger::sendMessageToDiscord("Line detected. Starting loop...", MessageType::SUCCESS);
                 MotorController::turnOnMotors();
                 loop.run(running);
             }
@@ -183,18 +163,12 @@ int main()
                 running = false;
                 searchWindowOpen = false;
 
-                DiscordMessenger::sendMessageToDiscord(
-                    "Line not found in time. Soft stop.",
-                    MessageType::WARNING
-                );
-
                 if (config.modules.debug)
                     DebugRenderer::closeWindow();
             }
 
             if (now - programStartTime > std::chrono::minutes(config.timing.max_system_runtime_min))
             {
-                DiscordMessenger::sendMessageToDiscord("Max runtime reached. Shutting down.", MessageType::WARNING);
                 exit(EXIT_SUCCESS);
             }
         }
@@ -202,12 +176,8 @@ int main()
     catch (const std::exception& e)
     {
         std::cerr << "Fatal error: " << e.what() << std::endl;
-        DiscordMessenger::sendMessageToDiscord(std::string("Fatal error: ") + e.what(), MessageType::ERROR);
 
         waitForUserIfInteractive();
-
         std::exit(EXIT_FAILURE);
     }
-
-    DiscordMessenger::shutdown();
 }

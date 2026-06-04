@@ -45,7 +45,7 @@ void PerspectiveTuner::open(Vision& vision)
         if (raw.empty()) continue;
 
         // Build a live perspective config from sliders
-        Config::Perspective live;
+        Config::Perspective live{};
         live.enabled = true;
         live.vanishing_y = s_vanishing_y / static_cast<double>(SLIDER_SCALE);
         live.trapezoid_top_width = s_top_width / static_cast<double>(SLIDER_SCALE);
@@ -110,8 +110,8 @@ void PerspectiveTuner::open(Vision& vision)
 
 void PerspectiveTuner::drawOverlay(cv::Mat& frame, const Config::Perspective& cfg)
 {
-    const float W = static_cast<float>(frame.cols);
-    const float H = static_cast<float>(frame.rows);
+    const auto W = static_cast<float>(frame.cols);
+    const auto H = static_cast<float>(frame.rows);
     const float vy = static_cast<float>(cfg.vanishing_y) * H;
     const float topH = static_cast<float>(cfg.trapezoid_top_width) * W * 0.5f;
     const float botH = static_cast<float>(cfg.trapezoid_bottom_width) * W * 0.5f;
@@ -140,8 +140,8 @@ void PerspectiveTuner::drawOverlay(cv::Mat& frame, const Config::Perspective& cf
 
 cv::Mat PerspectiveTuner::computeWarp(const cv::Mat& frame, const Config::Perspective& cfg)
 {
-    const float W = static_cast<float>(frame.cols);
-    const float H = static_cast<float>(frame.rows);
+    const auto W = static_cast<float>(frame.cols);
+    const auto H = static_cast<float>(frame.rows);
     const float vy = static_cast<float>(cfg.vanishing_y) * H;
     const float topH = static_cast<float>(cfg.trapezoid_top_width) * W * 0.5f;
     const float botH = static_cast<float>(cfg.trapezoid_bottom_width) * W * 0.5f;

@@ -1,103 +1,170 @@
 # MiLER
-The MILLER bot i fase 2
 
+Linjefølger for MILLER fase 2.
 
-## TODO:
-
-- Build the code for the following:
-  - [ ] constants
-  - [ ] run
-  - [ ] loop
-  - [ ] vision
-  - [ ] quadrantHandler
-  - [ ] vectorTranslator
-  - [ ] PID
-  - [ ] MotorController
+Prosjektet består av bildebehandling, styringslogikk og motorstyring som sammen gjør at roboten kan følge en linje autonomt.
 
 ---
 
-## constants
+## config
 
-Inneholder alle konstanter og verdier som brukes i prosjektet.
-Alle objektene (`PID`, `MotorController`, `vision`, osv.) baserer seg på disse verdiene slik at man enkelt kan endre oppførsel uten å endre kode direkte.
+Håndterer lasting av konfigurasjon fra `config.json`.
 
-- motorhastigheter
-- kameraoppsett
-- PID-konstanter (Kp, Ki, Kd)
-- intervaller og andre systemverdier
+Alle innstillinger samles her slik at systemet kan justeres uten å endre kildekoden.
+
+Eksempler:
+
+* motorpinner
+* kamerainnstillinger
+* PID-verdier
+* systemmoduler
+* debug-innstillinger
 
 ---
 
 ## run
 
-Startkoden for linjefølgeren.
-Den tester hver (si 30 sekunder som basis) om kamera ser en linje.
-Dersom den gjør, start `loop`, ellers `continue`.
+Inngangspunktet for programmet.
+
+Ansvar:
+
+* laster konfigurasjon
+* initialiserer kamera
+* initialiserer motorstyring
+* starter hovedløkken
+* håndterer oppstart og avslutning
 
 ---
 
 ## loop
 
-Kjører gjennom prosjektet
+Prosjektets hovedsløyfe.
 
-- henter frame fra kamera
-- sender frame til `vision`
-  - `vision` splitter opp kamera i kvadranter og finner midtpunkt av linjen
-  - `vision` sender videre punktene til `vectorTranslator`
-- `vectorTranslator` gjør punkter til vektorer og deretter til hastighet for motorside
-- `MotorController` og `PID` kontrollerer motorene basert på input
+For hver iterasjon:
+
+* henter bilde fra kamera
+* sender bildet til `vision`
+* mottar linjeinformasjon
+* beregner styringssignal
+* oppdaterer motorhastigheter
+
+Dersom ingen linje oppdages kan systemet stoppe eller bruke siste gyldige verdi.
 
 ---
 
 ## vision
 
-Håndterer bildebehandling og linjedeteksjon.
+Ansvarlig for bildebehandling og linjedeteksjon.
 
-- tar inn bilde (frame) fra kamera
-- konverterer bildet til gråskala (strengt tatt ikke nødvendig) og filtrerer bort støy
-- bruker `quadrantHandler` til å lage kvadranter (ved start)
-- computerer midtpunktet i hver kvadrant
-- sender punkt-par videre til `vectorTranslator`
-- har en enkel funksjon for å sjekke om linje er synlig (`detect_line`) som brukes i `run`
+Funksjonalitet:
+
+* mottar kamerabilde
+* filtrerer bort støy
+* konverterer til binært bilde
+* deler bildet inn i kvadranter
+* finner linjens posisjon
+* returnerer punkter som beskriver linjens retning
+
+Brukes som grunnlag for all styring.
 
 ---
 
 ## quadrantHandler
 
-Hjelpefunksjon for `vision`.
+Hjelpeklasse for `vision`.
 
-- finner linjens midtpunkt i sin kvadrant
-- returnerer ett punkt som representerer linjens posisjon
-- brukes av `vision` for å få mer stabil linjedeteksjon
+Ansvar:
+
+* håndtere individuelle bildekvadranter
+* finne linjens sentrum i hver kvadrant
+* returnere representative punkter
+
+Gir mer stabile målinger enn å analysere hele bildet samlet.
 
 ---
 
 ## vectorTranslator
 
-Oversetter linjepunktene fra `vision` til bevegelsesdata.
+Oversetter punkter fra bildebehandlingen til styringsdata.
 
-- tar inn punkt-par fra `vision`
-- beregner gjennomsnittlig x-posisjon og avvik fra bilens senter
-- oversetter avviket til en styringsverdi (retning og styrke eller angulær hastighet/akselerasjon)
-- sender resultatet videre til `PID` for korrigering
+Ansvar:
+
+* mottar punkter fra `vision`
+* beregner linjens retning
+* beregner avvik fra sentrum
+* genererer styreverdi for roboten
+
+Resultatet sendes videre til PID-regulatoren.
 
 ---
 
 ## PID
 
-Brukes for å stabilisere styringen slik at roboten følger linjen jevnt.
+Regulerer styringen slik at roboten følger linjen stabilt.
 
-- tar inn avvik fra `vectorTranslator`
-- beregner korrigeringsverdi med PID-algoritmen
-- bruker denne til å balansere forskjell mellom høyre og venstre motor
-- verdier for Kp, Ki og Kd ligger i `constants`
+Ansvar:
+
+* beregne proporsjonal korreksjon
+* beregne integralkomponent
+* beregne derivatkomponent
+* generere endelig korrigering
+
+Verdiene for Kp, Ki og Kd defineres i konfigurasjonen.
 
 ---
 
-## MotorController
+## motorControl
 
-Driver motorene basert på hastighetsinput fra `vectorTranslator` og justering fra `PID`.
+Håndterer kommunikasjon med motorene.
 
-- tar imot ønsket hastighet for hver motor
-- sender signal til motorstyring
-- skal kunne ta hensyn til retning og begrensninger
+Ansvar:
+
+* motta ønskede motorhastigheter
+* beregne venstre og høyre motoreffekt
+* sende PWM-signaler til motorstyringen
+* håndtere stopp og sikkerhetsfunksjoner
+
+---
+
+## shortKeyCommands
+
+Gir mulighet for manuell styring og debugging under kjøring.
+
+Funksjonalitet:
+
+* aktivere/deaktivere moduler
+* justere parametere
+* skrive statusinformasjon
+* kjøre testfunksjoner
+
+Brukes hovedsakelig under utvikling og feilsøking.
+
+---
+
+## debugRenderer
+
+Visualiserer data fra bildebehandlingen.
+
+Kan vise:
+
+* oppdaget linje
+* kvadranter
+* midtpunkter
+* beregnede vektorer
+* annen debug-informasjon
+
+Brukes kun når debug-modus er aktiv.
+
+---
+
+## Prosessflyt
+
+Kamera → Vision → QuadrantHandler → VectorTranslator → PID → MotorController
+
+1. Kamera tar bilde.
+2. Vision finner linjens posisjon.
+3. QuadrantHandler beregner punkter.
+4. VectorTranslator finner avvik og retning.
+5. PID beregner korrigering.
+6. MotorController oppdaterer motorene.
+7. Prosessen gjentas kontinuerlig.
